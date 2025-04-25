@@ -1,0 +1,22 @@
+id: spacy-en-lg
+description: "spaCy en_core_web_lg 3.8.0"
+tagset: UPOS
+eraFrom: "0"
+eraTo: "2024"
+language: "English"
+produces:
+  - TOK
+  - LEM
+  - POS
+model:
+  name: en_core_web_lg
+  href: https://github.com/explosion/spacy-models/releases/tag/en_core_web_lg-3.8.0
+software:
+  name: spaCy
+  href: https://spacy.io/models/en
+dataset:
+  name: Ontonotes 5, Wordnet 3.0
+  href: https://github.com/explosion/spacy-models/releases/tag/en_core_web_lg-3.8.0
+trainedBy: "spaCy"
+date: "2024-11-06"
+devport: 8121

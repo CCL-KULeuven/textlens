@@ -243,6 +243,7 @@ label {
 }
 
 /* Inputs */
+input[type=select],
 input[type=text],
 input[type=url],
 input[type=number],
@@ -313,6 +314,7 @@ select {
     border: 0px solid black;
     height: 34px;
     max-width: 300px;
+    min-width: 209px;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

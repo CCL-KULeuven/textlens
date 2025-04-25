@@ -4,6 +4,7 @@ export type Tagger = {
     tagset: null | string
     eraFrom: number
     eraTo: number
+    language: string
     produces: string[]
     attributions: null | {
         [key: string]: string

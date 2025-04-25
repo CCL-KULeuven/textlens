@@ -32,7 +32,7 @@ span {
     border: 1px solid var(--int-grey);
     padding: 0.3rem;
     margin: 0 0 0 0.3rem;
-    background-color: var(--int-green);
+    background-color: var(--textlens-green);
 }
 
 .fa {

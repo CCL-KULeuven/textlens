@@ -1,12 +1,13 @@
 <template>
-  <svg height="100" width="100" viewBox="0 0 100 100" 
+<!--   <svg height="100" width="100" viewBox="0 0 100 100" 
     fill="var(--int-yellow-outline)"
     stroke="none"
     :class="cssclass">
     <path class="grail" d="M10 10 L90 10 Q90 40 65 40 L65 80 Q80 80 80 90 L20 90 Q20 80 35 80 L35 80 L35 40 Q10 40 10 10 Z"/>
     <ellipse class="wine" cx="60" cy="90" rx="30" ry="10" />
     ...
-  </svg>
+  </svg> -->
+  <i class="fa fa-cog fa-spin" aria-hidden="true"></i>
 </template>
 
 <script lang='ts'>

@@ -1,5 +1,6 @@
 package org.ivdnt.galahad.data.document
 
+import org.ivdnt.galahad.TestConfig
 import org.ivdnt.galahad.app.User
 import org.ivdnt.galahad.data.corpus.Corpus
 import org.ivdnt.galahad.port.*
@@ -81,7 +82,7 @@ class DocumentTest {
             inputFile.copyTo(tempFile, true)
             val name = corpus.documents.create(tempFile)
             val doc = corpus.documents.readOrThrow(name)
-            val job = corpus.jobs.createOrThrow("pie-tdn")
+            val job = corpus.jobs.createOrThrow(TestConfig.TAGGER_NAME)
             // create the layer based on the plaintext parsing
             val plaintext = doc.plaintext
             val layer = LayerBuilder().loadLayerFromTSV("all-formats/input/pie-tdn.tsv", plaintext).build()
@@ -90,7 +91,7 @@ class DocumentTest {
             // Convert to each other format
             for (formatTo in DocumentFormat.entries) {
                 val meta = DocumentTransformMetadata(
-                    corpus, job, doc, User("testUser")
+                    corpus, job, doc, User("testUser"), formatTo
                 )
                 when (formatTo) {
                     // Skip the unsupported
@@ -106,7 +107,7 @@ class DocumentTest {
                         val result: File = doc.generateAs(formatTo, meta)
                         val expected: File = Resource.get("all-formats/output/from-$formatFrom-to-$formatTo.${formatTo.extension}")
                         val test = TestResult(expected.readText(), result.readText())
-                        test.ignoreDate().ignoreUUID().result()
+                        test.ignoreDate().ignoreUUID().ignoreTrailingWhiteSpaces().result()
                     }
                 }
             }

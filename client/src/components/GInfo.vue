@@ -1,6 +1,6 @@
 <template>
     <div :class="cssclass + ' infocontainer'">
-        <GSpinner :error="error" :still="!spinner" :small="small" :large="large" class="symbol" />
+        <!--<GSpinner :error="error" :still="!spinner" :small="small" :large="large" class="symbol" />-->
         <div class="content">
             <slot>Someone forgot to put the info.</slot>
         </div>

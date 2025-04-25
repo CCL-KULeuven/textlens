@@ -11,11 +11,15 @@ import org.ivdnt.galahad.data.document.DocumentFormat
 import org.ivdnt.galahad.data.document.Documents
 import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
 import org.ivdnt.galahad.jobs.Jobs
-import org.ivdnt.galahad.taggers.Taggers
+import org.ivdnt.galahad.port.CmdiMetadata
+import org.ivdnt.galahad.port.CorpusTransformMetadata
+import org.ivdnt.galahad.taggers.Tagger
 import org.ivdnt.galahad.util.createZipFile
 import java.io.File
 import java.io.OutputStream
+import java.nio.file.Files
 import java.util.*
+import kotlin.io.path.createTempDirectory
 
 /**
  * A corpus is a collection of documents, metadata and jobs, saved to a folder. The folder contents are:
@@ -32,7 +36,6 @@ import java.util.*
  */
 class Corpus(
     workDirectory: File,
-    user: User,
 ) : BaseFileSystemStore(workDirectory) {
 
     val documents = Documents(workDirectory.resolve("documents"))
@@ -63,6 +66,7 @@ class Corpus(
                 name = mutableCorpusMetadata.name,
                 eraTo = mutableCorpusMetadata.eraTo,
                 eraFrom = mutableCorpusMetadata.eraFrom,
+                language = mutableCorpusMetadata.language,
                 tagset = mutableCorpusMetadata.tagset,
                 dataset = mutableCorpusMetadata.isDataset,
                 public = mutableCorpusMetadata.isDataset, // Note that we set isPublic the same as isDataset.
@@ -73,6 +77,7 @@ class Corpus(
                 // Immutable/calculated fields
                 uuid = UUID.fromString(workDirectory.name),
                 activeJobs = jobs.readAll().filter { it.isActive }.size,
+                numResults = jobs.readAll().sumOf { it.hasResult },
                 numDocs = documents.readAll().size,
                 sizeInBytes = workDirectory.walkTopDown().filter { it.isFile }.map { it.length() }.sum(), // expensive
                 lastModified = System.currentTimeMillis(),
@@ -91,15 +96,16 @@ class Corpus(
         override fun expensiveGet() = metadataCache.get<CorpusMetadata>()
     }
 
-    val sourceTagger: ExpensiveGettable<Taggers.Summary> = object : ExpensiveGettable<Taggers.Summary> {
-        override fun expensiveGet(): Taggers.Summary {
+    val sourceTagger: ExpensiveGettable<Tagger> = object : ExpensiveGettable<Tagger> {
+        override fun expensiveGet(): Tagger {
             val metadata = metadata.expensiveGet()
-            return Taggers.Summary(
+            return Tagger(
                 id = SOURCE_LAYER_NAME,
                 description = "uploaded annotations",
                 tagset = metadata.tagset,
                 eraFrom = metadata.eraFrom,
                 eraTo = metadata.eraTo,
+                language = metadata.language,
                 produces = setOf("TODO"),
             )
         }
@@ -181,6 +187,7 @@ class Corpus(
      * Maps all [Document] found in [Documents] to the desired [DocumentFormat] and zips them. [formatMapper] should perform the mapping.
      */
     fun getZipped(
+        ctm: CorpusTransformMetadata,
         formatMapper: (Document) -> File,
         filter: (Document) -> Boolean,
         outputStream: OutputStream? = null,
@@ -189,7 +196,13 @@ class Corpus(
         var zipFile: File? = null
         val documents = documents.readAll().filter(filter)
         executeAndLogTime("Generating $name zip") {
-            zipFile = createZipFile(documents.asSequence().map(formatMapper), outputStream)
+            val convertedDocs = documents.asSequence().map(formatMapper)
+            val docsToCmdi = documents.asSequence().map { CmdiMetadata(ctm.documentMetadata(it.name)).file }
+            val cmdiZip = createZipFile(docsToCmdi, includeCMDI = true)
+            // rename the cmdiZip to "metadata"
+            val dest = File(createTempDirectory("metadata").toFile(), "metadata.zip")
+            Files.move(cmdiZip.toPath(), dest.toPath())
+            zipFile = createZipFile(convertedDocs + dest, outputStream)
         }
         return zipFile!!
     }

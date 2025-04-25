@@ -28,9 +28,9 @@
             <Transition name="help">
                 <GInfo class="help" v-if="!noHelp" v-show="expand">
                     <slot name="help">Someone forgot to put a help primer</slot>
-                    <div style="text-align: center; margin-top: 1em">
+                    <!-- <div style="text-align: center; margin-top: 1em">
                         <HelpLink v-if="helpSubject" :subject="helpSubject" />
-                    </div>
+                    </div> -->
                 </GInfo>
             </Transition>
 

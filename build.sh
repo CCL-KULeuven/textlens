@@ -1,3 +1,3 @@
-docker build -t instituutnederlandsetaal/galahad-client:dev client
-docker build -t instituutnederlandsetaal/galahad-proxy:dev proxy
-docker build -t instituutnederlandsetaal/galahad-server:dev server
+docker build -t instituutnederlandsetaal/textlens-client:1 client
+docker build -t instituutnederlandsetaal/textlens-proxy:1 proxy
+docker build -t instituutnederlandsetaal/textlens-server:1 server

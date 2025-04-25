@@ -1,17 +1,19 @@
 package org.ivdnt.galahad.jobs
 
 import org.apache.logging.log4j.kotlin.Logging
-import org.ivdnt.galahad.app.*
+import org.ivdnt.galahad.app.Config
+import org.ivdnt.galahad.app.INTERNAL_JOBS_ERROR_URL
+import org.ivdnt.galahad.app.INTERNAL_JOBS_RESULT_URL
 import org.ivdnt.galahad.data.CorporaController
 import org.ivdnt.galahad.data.document.Document
-import org.ivdnt.galahad.data.layer.Layer
 import org.ivdnt.galahad.data.document.DocumentFormat
-import org.ivdnt.galahad.port.SourceLayerableFile
+import org.ivdnt.galahad.data.layer.Layer
 import org.ivdnt.galahad.port.InternalFile
+import org.ivdnt.galahad.port.SourceLayerableFile
 import org.ivdnt.galahad.port.tsv.TSVFile
-import org.ivdnt.galahad.taggers.Taggers
-import org.ivdnt.galahad.tagset.TagsetStore
+import org.ivdnt.galahad.taggers.Tagger
 import org.ivdnt.galahad.tagset.Tagset
+import org.ivdnt.galahad.tagset.TagsetStore
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -59,8 +61,8 @@ class InternalJobController (
             val (corpusID, jobName, documentName) = dataForProcessingID( fileId ) ?: throw Exception("Processing ID not found, was this file uploaded by me?")
             val original: Document = corpora.getUncheckedCorpusAccess( corpusID ).documents.readOrThrow( documentName )
             val job: Job = corpora.getUncheckedCorpusAccess( corpusID ).jobs.readOrThrow( jobName )
-            val taggerSummary: Taggers.Summary? = job.taggers.getSummaryOrNull(job.name, null ).expensiveGet()
-            val tagset: Tagset? = tagsets.getOrNull(taggerSummary?.tagset)
+            val taggerTagger: Tagger? = job.taggerStore.getSummaryOrNull(job.name, null ).expensiveGet()
+            val tagset: Tagset? = tagsets.getOrNull(taggerTagger?.tagset)
 
             when (val uploadedFile = InternalFile.from(tempFile, DocumentFormat.Tsv).expensiveGet()) {
                 // Treat TSVFiles separately form SourceLayerableFiles, because calling sourceLayer() on a TSV
@@ -96,7 +98,7 @@ class InternalJobController (
                 job.isActive = false
             }
             job.next() // send new files
-            "DELETE"
+            "DELETE" // should be DELETE (KEEP for debugging)
         } catch (e: Exception) {
             // Something went wrong, let the tagger keep the file for investigation
             // Alternatively, the user stopped the original job so there is nowhere to return to.

@@ -1,12 +1,12 @@
 <template>
-    <GModal small title="Are you sure?" :show="show" @hide="$emit('hide')" :noHelp="noHelp">
+    <GModal small title="Are you sure?" :show="show" @hide="$emit('hide')" :noHelp="noHelp" closeBtnTitle="Cancel, keep data" closeBtnColor="green">
         <template #help>
-            {{ displayname }} will be deleted from the Galahad server.<br />
+            {{ displayname }} will be deleted from the textlens server.<br />
             Make sure you have a copy of the original files somewhere.
         </template>
         <p>You will <slot name="action">delete</slot> <b>{{ displayname }}</b>. This can not be undone.</p>
         <template #buttons>
-            <GButton green @click="$emit('delete', item); $emit('hide')">Confirm</GButton>
+            <GButton red @click="$emit('delete', item); $emit('hide')">Confirm</GButton>
         </template>
     </GModal>
 </template>

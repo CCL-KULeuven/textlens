@@ -4,7 +4,7 @@
     <transition name="fade" mode="out-in">
       <!-- v-if instead of v-show such that elements inside a GModal can rely on onMounted()-->
       <div v-if="show" class="bg" @click.self="$emit('hide')">
-        <GCard :showHelp="showHelp" :title="title" :class="`content ${small ? 'my-small' : ''}`" :noHelp="noHelp" :headless="headless">
+        <GCard :showHelp="showHelp" :title="title" :class="`content ${small ? 'my-small' : ''}`" :noHelp="noHelp" :headless="headless" :closeBtnTitle="closeBtnTitle">
           <template #title>
             <slot name="title"></slot>
           </template>
@@ -16,7 +16,7 @@
           </slot>
         </GCard>
         <div class="buttons">
-          <GButton @click="$emit('hide')" red>Close</GButton>
+          <GButton @click="$emit('hide')" v-bind:[closeBtnColor]="true">{{ closeBtnTitle }}</GButton>
           <slot name="buttons"></slot>
         </div>
       </div>
@@ -36,7 +36,9 @@ export default defineComponent({
     showHelp: { type: Boolean, default: true },
     show: { type: Boolean },
     small: { type: Boolean, default: false },
-    title: { type: String }
+    title: { type: String },
+    closeBtnTitle: {type: String, default: "Return to corpora"},
+    closeBtnColor: {type: String, default: "green"}
   },
   mounted(): void {
     // smort

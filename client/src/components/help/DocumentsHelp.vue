@@ -27,7 +27,7 @@
         <!-- Mimic <HelpLink/>. HelpLin always points to help/general, but formats is a separate page. -->
         <template v-if="!showLink">
             <div style="text-align: center; margin-top: 1em">
-                <a href='/galahad/help/formats' target="_blank" rel="noopener noreferrer">
+                <a href='/help/formats' target="_blank" rel="noopener noreferrer">
                     read more on formats
                 </a>
             </div>

@@ -24,16 +24,15 @@ const staticFileMiddleware = express.static('dist')
 // The staticfiles at root are somehow used if the client is behind the portal
 // but '/galahad' is the public path
 app.use( staticFileMiddleware )
-app.use('/galahad', staticFileMiddleware )
+app.use('/textlens', staticFileMiddleware )
 app.use(history({
   disableDotRule: true,
-  index: '/galahad/index.html',
+  index: '/textlens/index.html',
   verbose: true
 }))
-app.use('/galahad', staticFileMiddleware )
+app.use('/textlens', staticFileMiddleware )
 app.use( staticFileMiddleware )
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`)
 })
-

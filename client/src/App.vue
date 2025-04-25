@@ -1,44 +1,51 @@
 <template>
     <GTabs ref="tabs" class="level-1" basePath="" :tabs="[
-        { id: 'annotate', title: 'Annotate & Evaluate' },
-        { id: 'overview', title: 'Taggers & Datasets' },
+        { id: 'annotate', title: 'Annotate' },
+        { id: 'overview', title: 'Taggers' },
         { id: 'user', title: 'User' },
     ]">
 
         <template #title>
-            <div class="title">
-                <a href="https://ivdnt.org/" target="_blank" tabindex="-1" rel="noopener noreferrer">
-                    / instituut voor de Nederlandse&nbsp;taal&nbsp;/
-                </a>
-                <a href="/galahad/home" tabindex="-1">galahad</a>
+            
+            <div class="title raleway-title">
+                <a href="/textlens" tabindex="-1"><div class="logo-accent"><i class="fa fa-code"></i></div> textlens</a>
             </div>
+<!--             <div class="sub-title">
+                <a href="https://ivdnt.org/" target="_blank" tabindex="-1" rel="noopener noreferrer">
+                    CLARIAH-VL & / instituut voor de Nederlandse&nbsp;taal&nbsp;/
+                </a>
+            </div> -->
         </template>
 
-        <template #tabs-start>
-            <a href="/galahad/home">
-                <img class="painting" src="/galahad-graal-klein.png" />
+<!--         <template #tabs-start>
+            <a href="/galahad/">
+                <img src="/textlens.png" />
             </a>
-        </template>
+        </template> -->
 
         <template #tabs-end>
             <!-- If we ever decide to make these links open in the same tab, this is how:
                 <GNav :route="{ path: '/help' }">Help</GNav>
             -->
-            <a href="/galahad/help" target="_blank">Help</a>
+            <GNav :route="{ path: '/help' }">Help</GNav>
+            <GNav :route="{ path: '/application' }">About</GNav>
+            <GNav :route="{ path: '/contribute' }">Contribute</GNav>
+            <!-- <a href="/galahad/help" target="_blank">Help</a>
             <a href="/galahad/application" target="_blank">About</a>
             <a href="/galahad/contribute" target="_blank">Contribute</a>
-            <a href="http://lancelot.ivdnt.org" target="_blank">Lancelot</a>
+            <a href="http://lancelot.ivdnt.org" target="_blank">Lancelot</a>-->
         </template>
 
     </GTabs>
 
-    <GModal :show="app.errors.length > 0" title="Ocharme!" small noHelp @hide="app.resetErrors">
+    <GModal :show="app.errors.length > 0" title="Error" small noHelp @hide="app.resetErrors">
         Something went wrong. If the connection to the server failed, the app will reload automatically.
         <GInfo error v-for="error, index in app.errors" :key="index">{{ error }}</GInfo>
         <p>Please try again or contact
             <MailAddress /> for support
         </p>
     </GModal>
+
 </template>
 
 <script setup lang="ts">
@@ -46,7 +53,7 @@
 import { onMounted, ref } from 'vue'
 import stores, { AppStore, UserStore } from '@/stores'
 // Components
-import { GInfo, GModal, GTabs, MailAddress } from '@/components'
+import { GInfo, GModal, GTabs, MailAddress, TFooter} from '@/components'
 
 // Stores
 const app = stores.useApp() as AppStore
@@ -70,7 +77,11 @@ setInterval(() => { user.fetchUser() }, 5000)
     src: url("@/assets/Schoolboek-Regular.woff") format('woff'),
 }
 
-$galahad-theme: #62b6ff;
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+$galahad-theme: #4CCD99;
+$textlens-accent: #ffbb00;
+$textlens-dark-green: #007F73;
 
 :root {
     // INT theme colors
@@ -92,6 +103,9 @@ $galahad-theme: #62b6ff;
     --int-orange-hover: #DF7000;
     --int-orange-active: #CC6600; // made original hover into active
     //green
+    --textlens-green: #4CCD99;
+    --textlens-green-hover: #2da071;
+    --textlens-green-active: #007F73;
     --int-green: #89C24B;
     --int-green-hover: #79B246;
     --int-green-active: #6FA338; // made original hover into active
@@ -129,6 +143,22 @@ h5 {
     font-weight: normal;
     font-style: normal;
 }
+
+.raleway-title {
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
+  background-color:$textlens-accent;
+}
+
+.logo-accent{
+  display: inline;
+  color:var(--int-very-light-grey);
+  font-size:93%;
+  font-weight:bold;
+}
+
 
 .textcolor {
     color: var(--black)
@@ -181,6 +211,12 @@ body {
 .title {
     // Make some space for help, about, contribute.
     padding-right: 0px;
+}
+
+
+
+.accent {
+    color: #1188e4
 }
 
 @media (max-width: 800px) or (max-height: 700px) {

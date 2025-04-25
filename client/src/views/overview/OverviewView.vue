@@ -3,8 +3,8 @@
         <GTabs basePath="/overview" class="level-2" :tabs="[
             { id: 'taggers', title: 'Taggers' },
             { id: 'tagsets', title: 'Tagsets' },
-            { id: 'datasets', title: 'Datasets' },
-            { id: 'benchmarks', title: 'Benchmarks' },
+            //{ id: 'datasets', title: 'Datasets' },
+            //{ id: 'benchmarks', title: 'Benchmarks' },
         ]" />
     </div>
 </template>

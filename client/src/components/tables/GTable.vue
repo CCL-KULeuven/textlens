@@ -1,5 +1,5 @@
 <template>
-    <GCard :showHelp="showHelp" :headless="headless" :helpSubject="helpSubject" :noHelp>
+    <GCard :showHelp="showHelp" :headless="headless" :helpSubject="helpSubject">
         <template #title>
             <slot name="title">{{ title }}</slot>
         </template>
@@ -139,8 +139,7 @@ export default defineComponent({
         showHelp: { type: Boolean, default: false },
         items: { type: Array as PropType<Item[]>, default() { return [] } },
         modelValue: { type: Object as PropType<Item>, default: null }, // use in conjunction with 'selectable' to make a v-model
-        helpSubject: { type: String as () => keyof typeof help },
-        noHelp: { type: Boolean, default: false }
+        helpSubject: { type: String as () => keyof typeof help }
     },
     //   model: {
     //       prop: 'value',
@@ -384,8 +383,9 @@ table .loading-symbol {
 }
 
 table {
+    display: block;
     border-collapse: collapse;
-    margin: 0 auto;
+    margin: 0;
     margin-top: 5px;
     padding: 0;
 

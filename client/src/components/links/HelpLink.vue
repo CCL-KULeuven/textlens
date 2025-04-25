@@ -1,5 +1,5 @@
 <template>
-    <a :href="'/galahad/help/general#' + subject" target="_blank" rel="noopener noreferrer">
+    <a :href="'/textlens/help/general#' + subject" target="_blank" rel="noopener noreferrer">
         read more on <i>{{ subject }}</i>
     </a>
 </template>

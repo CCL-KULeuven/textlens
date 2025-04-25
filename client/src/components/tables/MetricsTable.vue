@@ -1,5 +1,5 @@
 <template>
-    <GTable :title :columns :items :loading helpSubject="evaluate" class="metricsTable" :sortedByField :noHelp>
+    <GTable :title :columns :items :loading helpSubject="evaluate" class="metricsTable" :sortedByField>
 
         <template #help>
             <slot name="help">
@@ -41,8 +41,7 @@
     </GTable>
 
     <ComparisonModal :show=showModal @hide="showModal = false" :samples="samples"
-        @download="$emit('download', modalData)" :referenceJob="jobSelection.referenceJobId"
-        :hypothesisJob="jobSelection.hypothesisJobId" :downloading />
+        :referenceJob="jobSelection.referenceJobId" :hypothesisJob="jobSelection.hypothesisJobId" />
 </template>
 
 <script setup lang="ts">
@@ -62,26 +61,19 @@ const props = defineProps({
     columns: { type: Array, default: [] },
     items: { type: Array, default: [] },
     loading: { type: Boolean, default: false },
-    sortedByField: { type: String, default: "count" },
-    downloading: { type: Boolean, default: false },
-    noHelp: { type: Boolean, default: false }
+    sortedByField: { type: String, default: "count" }
 })
-
-// Emits
-defineEmits(['download'])
 
 // Fields
 const showModal = ref(false)
 const samples = ref({ title: "", samples: [] } as { title: string, samples: TermComparison[] })
-const modalData = ref({})
 
 // Methods
 /**
  * Open a set of samples in a modal.
  */
 function openModal(data) {
-    modalData.value = data
-    samples.value = { title: `${data.field.label} ${data.item.name} samples`, samples: data.value.samples }
+    samples.value = { title: data.field.label + ' samples', samples: data.value.samples }
     showModal.value = true
 }
 </script>

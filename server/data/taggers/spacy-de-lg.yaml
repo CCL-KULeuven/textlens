@@ -1,0 +1,22 @@
+id: spacy-de-lg
+description: "spaCy de_core_news_lg 3.8.0"
+tagset: UPOS
+eraFrom: "0"
+eraTo: "2024"
+language: "German"
+produces:
+  - TOK
+  - LEM
+  - POS
+model:
+  name: de_core_news_lg
+  href: https://github.com/explosion/spacy-models/releases/tag/de_core_news_lg-3.8.0
+software:
+  name: spaCy
+  href: https://spacy.io/models/de
+dataset:
+  name: Tiger Corpus, WikiNER
+  href: https://github.com/explosion/spacy-models/releases/tag/de_core_news_lg-3.8.0
+trainedBy: "spaCy"
+date: "2024-11-06"
+devport: 8123

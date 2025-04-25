@@ -1,7 +1,6 @@
 <template>
     <div>
-        <MetricsTable title="Grouped Metrics" :loading :columns :items @download="(data) => download(data)"
-            :downloading>
+        <MetricsTable title="Grouped Metrics" :loading :columns :items>
             <template #help>
                 <p>In PoS Metrics an overview is given of the (dis)agreement for lemma and PoS per part-of-speech. Click
                     on
@@ -13,7 +12,22 @@
                         Only the 100 most frequent groups are shown.
                     </b>
                 </p>
-                <MetricsFilter ref="metricsFilter" />
+                <div class="table-controls">
+                    <div class="table-control">
+                        Annotation:
+                        <GInput type="select" :options="metricOptions" v-model="selectedMetric" />
+                    </div>
+
+                    <div class="table-control">
+                        Group by:
+                        <GInput type="select" :options="groupOptions" v-model="selectedGroup" />
+                    </div>
+
+                    <div class="table-control" v-if="selectedMetric == selectedGroup">
+                        Single/multiple analysis:
+                        <GInput type="select" :options="singleOrMultipleOptions" v-model="selectedSingleOrMultiple" />
+                    </div>
+                </div>
             </template>
         </MetricsTable>
 
@@ -28,27 +42,45 @@ import { storeToRefs } from 'pinia'
 import stores from "@/stores"
 // API & types
 import { metricsPerPosColumns } from '@/stores/evaluation/metrics'
-import * as API from '@/api/evaluation'
-import * as Utils from "@/api/utils"
 // Components
 import { EvaluationInfoBox } from '@/components'
 import MetricsTable from '@/components/tables/MetricsTable.vue'
-import MetricsFilter from '@/components/tables/MetricsFilter.vue'
-
-// Stores
-const { loading, metrics } = storeToRefs(stores.useMetrics())
-const corporaStore = stores.useCorpora()
-const jobSelection = stores.useJobSelection()
 
 // Fields
-const downloading = ref(false)
-
-const columns = computed(() => metricsPerPosColumns)
-const metricsFilter = ref(null)
-const metricName = computed(() => {
-    return metricsFilter.value?.metricName
+const { loading, metrics } = storeToRefs(stores.useMetrics())
+const metricOptions = computed(() => {
+    return [
+        { value: "pos", text: "PoS" },
+        { value: "lemma", text: "Lemma" },
+        { value: "lemmaPos", text: "PoS + Lemma" }
+    ]
+    if (metrics.value?.metrics == null) return []
+    return Object.keys(metrics.value.metrics).map((key) => ({ value: key, text: key.split(/(?=[A-Z])/).join(" ") }))
 })
+const groupOptions = [
+    { value: "pos", text: "PoS" },
+    { value: "lemma", text: "Lemma" },
+]
+const selectedMetric = ref(metricOptions.value[0]?.value)
+const selectedGroup = ref(metricOptions.value[0]?.value)
+const singleOrMultipleOptions = [
+    { value: "both", text: "Both" },
+    { value: "single", text: "Single" },
+    { value: "multi", text: "Multiple" },
+]
+const selectedSingleOrMultiple = ref(singleOrMultipleOptions[0]?.value)
+const columns = computed(() => metricsPerPosColumns)
+const metricName = computed(() => {
+    let annotation = null
+    if (selectedSingleOrMultiple.value == "both" || selectedMetric.value != selectedGroup.value) {
+        annotation = selectedMetric.value
+    } else {
+        annotation = selectedSingleOrMultiple.value + capitalize(selectedMetric.value)
+    }
+    const group = capitalize(selectedGroup.value)
+    return annotation + "By" + group
 
+})
 const posMetrics = computed(() => {
     if (metrics.value?.metrics?.[metricName.value] == null) return []
     // Copy over the metrics (depending on selectedMetric.value) from: 
@@ -81,17 +113,7 @@ const items = computed(() => {
 })
 
 // Methods
-function download(data: Any) {
-    const classType = data.field.key
-    const group = data.item.name
-
-    downloading.value = true
-    API.getMetricsSamples(corporaStore.activeUUID, jobSelection.hypothesisJobId, jobSelection.referenceJobId, metricName.value, classType, group)
-        .then((response) => {
-            Utils.browserDownloadResponseFile(response)
-        })
-        .catch(res => Utils.handleBlobError(res, "download grouped metrics samples", app))
-        .finally(() => downloading.value = false)
-
+function capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1)
 }
 </script>

@@ -69,7 +69,7 @@ export default defineComponent({
             this.induceCurrentTab()
             return
         }
-        const state = localStorage.getItem('galahad:' + this.basePath)
+        const state = localStorage.getItem('textlens:' + this.basePath)
         if (state !== null && state !== undefined) {
             // load state from local storage
             this.navigateTo(state, true)
@@ -118,11 +118,11 @@ export default defineComponent({
         setCurrentTab(tabId: string) {
             // Since the route is not reactive, we have to update the value like this
             this.currentTab = tabId
-            if (tabId !== null && tabId !== undefined) localStorage.setItem('galahad:' + this.basePath, tabId)
+            if (tabId !== null && tabId !== undefined) localStorage.setItem('textlens:' + this.basePath, tabId)
         },
         urlForTab(tabId: string) {
             const qs = Object.entries(this.$route.query).map(([k, v]) => `${k}=${encodeURIComponent(typeof (v) === "object" ? JSON.stringify(v) : v)}`).join('&')
-            return '/galahad' + this.basePath + '/' + tabId + '?' + qs;
+            return this.basePath + '/' + tabId + '?' + qs;
         }
     },
     watch: {
@@ -158,15 +158,14 @@ export default defineComponent({
 
         img {
             position: relative;
-            left: -6px;
-            height: 125px;
+            height: 110px;
             pointer-events: none;
         }
 
         a {
             display: block;
             height: 110px;
-            width: 232px;
+            width: 150px;
             position: relative;
         }
     }
@@ -274,8 +273,9 @@ export default defineComponent({
         }
 
         .bottom {
-            line-height: 70px;
+            line-height: 50px;
             font-size: 18px;
+            float:right;
         }
     }
 

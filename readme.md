@@ -1,26 +1,24 @@
-# GaLAHaD (0.9.0)
+# Galahad
+
 Generating Linguistic Annotations for Historical Dutch
+
+Development:
 
 [![Version, build and push to Docker Hub](https://github.com/INL/Galahad/actions/workflows/publish-dev.yml/badge.svg)](https://github.com/INL/Galahad/actions/workflows/publish-dev.yml)
 [![Tests](https://github.com/INL/Galahad/actions/workflows/tests.yml/badge.svg?branch=development&event=push)](https://github.com/INL/Galahad/actions/workflows/tests.yml)
 
-### GaLAHaD-related Repositories
-- [galahad](https://github.com/INL/galahad) [you are here]
-- [galahad-train-battery](https://github.com/INL/galahad-train-battery)
-- [galahad-taggers-dockerized](https://github.com/INL/galahad-taggers-dockerized) [to be released]
-- [galahad-corpus-data](https://github.com/INL/galahad-corpus-data/)
-- [int-pie](https://github.com/INL/int-pie)
-- [int-huggingface-tagger](https://github.com/INL/huggingface-tagger) [to be released]
+
 
 ## Goal
+
 Galahad is developed as part of the CLARIAH "Improved Infrastructure for Historical Dutch" project. The goal is an application that:
 
-- enables linguïsts:
-  - to check which taggers are suitable for tagging their corpus.
-  - to have their corpus tagged
-- enables computational linguists:
-  - to provide their models through a unified interface
-  - to have their model evaluated
+- enables linguïsts to:
+  - check which taggers are suitable for tagging their corpus.
+  - have their corpus tagged
+- enables computanional linguïsts:
+  - provide their models through a unified interface
+  - have their model evaluated on INT-hosted corpora
 
 This is provided through a platform that offers:
 - statistics for submitted models on existing corpora
@@ -45,11 +43,24 @@ Note that this infrastructure can also be of interest for other languages and er
 Do you have docker and docker-compose? Do you have access to the public Docker Hub [instituutnederlandsetaal](https://hub.docker.com/repositories/instituutnederlandsetaal)? Then you can clone this repository and run
 
 ```
-docker compose up
+docker-compose up
 ```
-This requires an external taggers network to exists. You can use the `docker-compose.yml` from `https://github.com/INL/galahad-taggers-dockerized` to start a taggers network.
+This requires an external taggers network to exists. You can use the `docker-compose.yml` from `https://github.com/INL/taggers-dockerized` to start a taggers network.
 
 To run Galahad locally. The webclient is available on port 8080.
+
+Use the `docker-compose.yml` from `https://github.com/INL/taggers-dockerized` to start some taggers.
+
+### Resource limits
+
+Resources limits (as part of the deploy keys in docker-compose files) are enabled on swarm mode. To enable them outside swarm mode, run
+
+```
+docker-compose --compatibility up
+docker stats
+```
+
+The latter command to check the proper limits are set.
 
 # Setup for development
 
@@ -67,31 +78,49 @@ Start the client.
 
 `npm run dev`
 
-Go to `http://localhost:5173/` in the browser to check the client development server is running.
-
 ## The server
-Go to your favourite IDE and open the Gradle project in `galahad/server`.
 
-For development, add `spring.profiles.active=dev` to the environment variables. If you are using IntelliJ, simply use `server/.run/GalahadApplication.run.xml`. This is needed to differentiate whether we are in a docker container (production) or on the localhost (development), which in turn changes how we must communicate with the taggers (via a docker network or via the localhost). 
+Go to `http://localhost:8080/` in the browser to check the client development server is running.
+
+Go to your favourite IDE and open the Gradle project in `galahad/server`. ... maybe some installation steps ... 
 
 Run `galahad/server/src/main/kotlin/org/ivdnt/galahad/app/GalahadApplication.kt` from your IDE. Check `http://localhost:8010` to see whether see server is running.
 
-Go back to the client in the browser and try to create a corpus and upload some documents.
+Go back to the client in the browser and try to create a corpus an upload some documents.
 
 ## The taggers
 
-In development the application will talk to the taggers through a port-forward. The port-forwards are defined in `docker-compose.yml` from `https://github.com/INL/galahad-taggers-dockerized`. The port-forwards should be defined accordingly as `devport` in the taggers specifications at `server/data/taggers/*.yaml` to enable communication.
+In development the application will talk to the taggers through a port-forward. The port-forwards are defined in `docker-compose.yml` from `https://github.com/INL/taggers-dockerized`. The port-forwards should be defined accordingly as `devport` in the taggers specifications at `server/data/taggers/*.yaml` to enable communication.
+
+### Configuring the callback adress
+
+The taggers send results and errors back to the server through a callback address. This address is configured in `.env`. For development, you can override the callback address with a local ip. Do the following
+
+- `hostname -I` to see a list of available local ips
+- add line `CALLBACK_SERVER=http://172.16.4.146:8010/internal/jobs` to file `env.dev`
+- launch taggers with `docker-compose --env-file .env.dev up`
 
 ## Adding a new tagger
 
-*Asssuming you have already wrapped your tagger in a Docker image.*
+*Asssuming you have already wrapped your tagger in a Docker image, instructions will follow ...*
 
-First, launch your tagger. See `https://github.com/INL/galahad-taggers-dockerized`.
+First, launch your tagger. See `https://github.com/INL/taggers-dockerized`.
 
-Now make Galahad aware of the new tagger by creating a tagger metadata yaml file. See `server/data/taggers/` in this repo for examples.
+Now make Galahad aware of the new tagger:
 
 Make the specification yaml available to Galahad:
-- If you are running Galahad server from a docker container, the specification yaml should be placed on the docker volume at `data/taggers/`.
+ - If you are running Galahad server from a docker container, the specification yaml should be placed on the docker volume used by the server. Find it with
+```
+# List the docker volumes
+# the volume is likely called galahad_tagger-volume
+docker volume ls
+
+# Inpect the volume
+# We are interested in the Mountpoint property
+docker inspect VOLUME_NAME
+
+# You can check the other specifications at the mountpoint and copy your specifications
+```
 - If you are running Galahad server otherwise e.g. from your IDE, you can add the specifications yaml directly to `server/data/taggers/`
 
 Refresh the browser to load the new tagger.
@@ -114,7 +143,7 @@ For more details, see the help screen on formats on the GaLAHaD website.
 
 ## Technical notes
 
-### Swagger UI
+### Swagger
 
 Once you have launched the application, you can explore the public API at
 

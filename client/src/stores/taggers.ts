@@ -26,21 +26,32 @@ const useTaggers = defineStore('taggers', () => {
     // Fields
     const loading = ref(false)
     const taggers = ref([] as Tagger[])
+    const languages = ref([] as Object[])
 
     // Methods
     function reload() {
         loading.value = true
         API.getTaggers()
-            .then(response => taggers.value = response.data)
+            .then(response => {
+                taggers.value = response.data
+                // compute unique languages from taggers
+                let uniqueLangs = [...new Set(taggers.value.map((tagger) => tagger.language))].sort()
+                // create { value: <language>, text: <language> } objects for select box
+                languages.value = uniqueLangs.map(lang => ({
+                    text: lang,
+                    value: lang
+                }))                
+            })
             .catch(error => { app.handleServerError("fetch taggers", error) })
             .finally(() => loading.value = false)
     }
 
     reload() // load once
 
+    
     // Exports
     return {
-        loading, taggers
+        loading, taggers, languages
     }
 })
 

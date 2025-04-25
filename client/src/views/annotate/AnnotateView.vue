@@ -1,10 +1,10 @@
 <template>
     <GTabs class="level-2" basePath="/annotate" :tabs="[
-        { id: 'corpora', title: 'Corpora' },
-        { id: 'documents', title: 'Documents', disabled: !corporaStore.activeCorpus },
-        { id: 'jobs', title: 'Jobs', disabled: !corporaStore.hasDocs },
-        { id: 'evaluate', title: 'Evaluate', disabled: !corporaStore.hasDocs },
-        { id: 'export', title: 'Export', disabled: !userStore.hasWriteAccess || !corporaStore.hasDocs }
+      //  { id: 'corpora', title: '1. Manage Corpora' },
+      //  { id: 'documents', title: '2. Upload Documents', disabled: !corporaStore.activeCorpus },
+      //  { id: 'jobs', title: '3. Start Annotation Jobs', disabled: !corporaStore.hasDocs },
+      //  { id: 'evaluate', title: 'Evaluate', disabled: !corporaStore.hasDocs },
+      //  { id: 'export', title: '4. Export', disabled: !userStore.hasWriteAccess || !corporaStore.hasDocs }
     ]" />
 </template>
 

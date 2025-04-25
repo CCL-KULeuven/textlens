@@ -33,6 +33,11 @@ const useUser = defineStore('user', () => {
         return corpus.owner === user.value.id || user.value.admin
     }
 
+    function hasCorpusWriteAccess(corpus: CorpusMetadata | null): boolean {
+        if (!corpus) return false
+        return corporaStore.userIsCollaborator || user.value.admin || corpus.owner === user.value.id
+    }
+
     /**
      * Poll for the user account. On error, refresh page.
      */

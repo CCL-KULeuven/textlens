@@ -1,5 +1,5 @@
 <template>
-    <a :href="'/galahad/help/glossary#' + gloss" target="_blank" rel="noopener noreferrer">
+    <a :href="'/help/glossary#' + gloss" target="_blank" rel="noopener noreferrer">
         <slot>{{ gloss }}</slot>
     </a>
 </template>

@@ -3,11 +3,8 @@
 
         <!-- Styled label for input -->
         <label for="file-upload" class="custom-file-upload">
-            <svg class="svg-icon" aria-hidden="true" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg"
-                width="20" height="12" viewBox="0 0 20 12">
-                <polygon class="st0" points="10,4.2 2.2,12 0.1,9.9 10,0 19.9,9.9 17.8,12 "></polygon>
-            </svg>
-            Select file(s)
+            <i class="fa fa-upload"></i> 
+            Upload file(s)
         </label>
         <!-- Actual input -->
         <input type="file" ref="uploadInput" name="filefield" multiple id="file-upload" style="display: none;"
@@ -37,7 +34,7 @@
 
         <!-- Error for illegal selection -->
         <GInfo error v-if="illegalFiles.length > 0">
-            You have selected some filetype(s) that are not supported in GaLAHaD:
+            You have selected some filetype(s) that are not supported in textlens:
             <ul>
                 <li v-for="file in illegalFiles" :key="file.name">
                     {{ file.name }}
@@ -48,7 +45,7 @@
             <ol>
                 <li>copy-paste it to NotePad</li>
                 <li>save as .txt</li>
-                <li>upload it to GaLAHaD</li>
+                <li>upload it to textlens</li>
             </ol>
         </GInfo>
 
