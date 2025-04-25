@@ -1,5 +1,5 @@
 <template>
-    <GModal :show="show" :title="`Tag job ${job.tagger.id}`" @hide="$emit('hide')" :showHelp="false">
+    <GModal :show="show" :title="`Tag job ${job.tagger.id}`" @hide="$emit('hide')" :showHelp="false" closeBtnTitle="Return to jobs" closeBtnColor="green">
         <template #help>
             Here you can start a job to tag the documents in your corpus. This may take a while, depending on the corpus
             size.
@@ -30,7 +30,7 @@
             <template v-else>
                 <p class="centerText" v-if="job.progress.untagged > 0">
                     <template v-if="jobIndication != null">
-                        GaLAHaD is currently processing <b>{{ jobIndication }}</b> {{ jobIndication == 1 ? 'document' :
+                        Textlens is currently processing <b>{{ jobIndication }}</b> {{ jobIndication == 1 ? 'document' :
                             'documents' }}
                     </template>
                     <template v-else>
@@ -64,7 +64,7 @@
             <div class="progress">
                 <ProgressSegment label="failed" color="var(--int-red)" :total="job.progress.total"
                     :value="job.progress.failed" />
-                <ProgressSegment label="finished" color="var(--int-green)" :total="job.progress.total"
+                <ProgressSegment label="finished" color="var(--textlens-green)" :total="job.progress.total"
                     :value="job.progress.finished" />
                 <ProgressSegment label="processing" color="var(--int-light-grey)" :total="job.progress.total"
                     :value="job.progress.processing" />

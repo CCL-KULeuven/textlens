@@ -1,7 +1,7 @@
 package org.ivdnt.galahad.util
 
-import java.net.URLEncoder
 import jakarta.servlet.http.HttpServletResponse
+import java.net.URLEncoder
 
 /**
  * A valid filename for windows and linux. Exceptions like COM1 still exist.
@@ -25,6 +25,7 @@ fun String.escapeXML(): String {
     return this
         .replace("&","&amp;")
         .replace("<","&lt;")
+        .replace(">","&gt;")
         .replace("\"","&quot;")
 }
 

@@ -13,8 +13,14 @@
 
         </GTable>
         <!--Download-->
-        <p>Download all samples for this category.</p>
-        <DownloadButton wide @click="$emit('download')" :loading="downloading" />
+        <template v-if="!samples.title">
+            <p>
+                Download all PoS {{ samples.agreement ? "agreements" : "confusions" }}
+                between <b>{{ samples.hypothesisPos }} ({{ hypothesisJob }})</b>
+                and <b>{{ samples.referencePos }} ({{ referenceJob }})</b>
+            </p>
+            <DownloadButton wide @click="download" :loading="downloading" />
+        </template>
     </GModal>
 </template>
 
@@ -38,13 +44,10 @@ const props = defineProps({
     samples: { type: Object },
     referenceJob: { type: String },
     hypothesisJob: { type: String },
-    downloading: { type: Boolean, default: false }
 })
 
-// Emits
-defineEmits(['hide', 'download'])
-
 // Fields
+const downloading = ref(false)
 const title = computed(() => {
     if (props.samples.title) return props.samples.title
     return props.samples.agreement ? 'PoS agree samples' : 'PoS confusion samples'
@@ -70,6 +73,18 @@ const items = computed(() => {
         }
     })
 })
+
+// Methods
+function download() {
+    const hypothesisPos = props.samples.hypothesisPos
+    const referencePos = props.samples.referencePos
+    downloading.value = true
+    API.getDownloadPosConfusion(corporaStore.activeUUID, props.hypothesisJob, props.referenceJob, hypothesisPos, referencePos)
+        .then((response) => {
+            Utils.browserDownloadResponseFile(response)
+            downloading.value = false
+        })
+}
 
 </script>
 

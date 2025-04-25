@@ -1,7 +1,8 @@
 <template>
-    <button :disabled="disabled || loading" :class="cssClass" @click="$emit('click')">
+    <button :disabled="disabled || loading" :class="cssClass" @click="$emit('click')" :title="title" :showTitle="showTitle">
         <GSpinner small v-if="loading" />
         <slot></slot>
+        {{showTitle ? title : '' }}
     </button>
 </template>
 
@@ -11,15 +12,17 @@ import { computed } from 'vue'
 // Components
 import { GSpinner } from '@/components/'
 
-const props = defineProps<{
-    disabled?: boolean
-    red?: boolean
-    orange?: boolean
-    green?: boolean
-    plain?: boolean
-    loading?: boolean
-}>()
 
+const props = defineProps({
+    loading: {type: Boolean},
+    disabled: {type: Boolean},
+    red: {type: Boolean},
+    orange: {type: Boolean},
+    green: {type: Boolean},
+    plain: {type: Boolean},
+    title: { type: String, default: "" },
+    showTitle: { type: Boolean, default: false}
+})
 const cssClass = computed(() => {
     return {
         red: props.red,
@@ -71,7 +74,7 @@ button {
     }
 
     &.green {
-        background-color: var(--int-green);
+        background-color: var(--textlens-green);
     }
 
     &.red {
@@ -93,7 +96,7 @@ button {
             }
 
             &.green {
-                background-color: var(--int-green-hover);
+                background-color: var(--textlens-green-hover);
             }
 
             &.red {
@@ -113,7 +116,7 @@ button {
             }
 
             &.green {
-                background-color: var(--int-green-active);
+                background-color: var(--textlens-green-active);
             }
 
             &.red {

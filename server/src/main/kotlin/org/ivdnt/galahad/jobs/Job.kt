@@ -15,7 +15,8 @@ import org.ivdnt.galahad.data.layer.LayerSummary
 import org.ivdnt.galahad.data.layer.plus
 import org.ivdnt.galahad.evaluation.metrics.*
 import org.ivdnt.galahad.jobs.DocumentJob.DocumentProcessingStatus
-import org.ivdnt.galahad.taggers.Taggers
+import org.ivdnt.galahad.taggers.Tagger
+import org.ivdnt.galahad.taggers.TaggerStore
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.*
 import org.springframework.util.LinkedMultiValueMap
@@ -38,7 +39,7 @@ class Job(
     private val corpus: Corpus,
 ) : BaseFileSystemStore(workDirectory), Logging {
 
-    val taggers = Taggers()
+    val taggerStore = TaggerStore()
     val name: String = workDirectory.name
 
     private val documentsWorkDirectory = workDirectory.resolve("documents")
@@ -56,7 +57,7 @@ class Job(
             throw Exception("Job name not allowed")
         }
         documentsWorkDirectory.mkdirs()
-        if (!taggers.ids.contains(name) && name != SOURCE_LAYER_NAME) {
+        if (!taggerStore.ids.contains(name) && name != SOURCE_LAYER_NAME) {
             // A job without a tagger is probably invalid, but we want to be careful,
             // so we only delete it if the job is empty
             // Otherwise it deserves at least manual inspection
@@ -81,6 +82,14 @@ class Job(
             _isActive.modify<Boolean> { value }; corpus.invalidateCache()
         }
 
+    val hasResult: Int
+        get() {
+            if (this.name == "sourceLayer") {
+                return 0
+            }
+            val statuses = corpus.documents.allNames.map { document(it).status }
+            return statuses.count {it == DocumentProcessingStatus.FINISHED }
+        }
     /**
      * The sum of the global [Metrics] score of all the documents of the job (as opposed to per PoS).
      * Cached in a file, as it is expensive.
@@ -171,7 +180,7 @@ class Job(
             val resultSummary: LayerSummary =
                 documents.map { it.result.summary }.reduceOrNull { a, b -> a + b } ?: LayerSummary()
             return State(
-                taggers.getSummaryOrNull(name, corpus.sourceTagger).expensiveGet() ?: Taggers.Summary(),
+                taggerStore.getSummaryOrNull(name, corpus.sourceTagger).expensiveGet() ?: Tagger(),
                 progress,
                 preview,
                 resultSummary,
@@ -286,7 +295,7 @@ class Job(
         ): T? {
             // Setup request.
             val restTemplate = RestTemplate()
-            val endpoint = URL("${job.taggers.getURL(job.name)}/$route")
+            val endpoint = URL("${job.taggerStore.getURL(job.name)}/$route")
             val builder = UriComponentsBuilder.fromUri(endpoint.toURI())
             // Send request.
             val responseEntity = try {

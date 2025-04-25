@@ -19,9 +19,3 @@ export type Field = {
     isPrimaryField?: boolean
     hidden?: boolean
 }
-
-export type TableData<T> = {
-    field: Field
-    item: T
-    value: any
-}

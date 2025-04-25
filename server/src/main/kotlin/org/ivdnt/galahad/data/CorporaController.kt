@@ -25,7 +25,7 @@ class CorporaController(
     @Autowired
     private val response: HttpServletResponse? = null
     private fun File.corpus(): Corpus {
-        return Corpus(this, User.getUserFromRequestOrThrow(request))
+        return Corpus(this)
     }
 
     private fun assertCorpusNameValidOrThrow(corpus: String) {
@@ -116,6 +116,7 @@ class CorporaController(
             name = value.name,
             eraFrom = value.eraFrom,
             eraTo = value.eraTo,
+            language = value.language,
             tagset = value.tagset,
             isPublic = value.isPublic || value.isDataset, // any dataset is public
             isDataset = value.isDataset,

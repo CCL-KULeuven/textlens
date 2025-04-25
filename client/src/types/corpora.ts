@@ -5,6 +5,7 @@ export type CorpusMetadata = MutableCorpusMetadata & {
     "dataset": boolean
     "lastModified": number
     "numDocs": number
+    "numResults": number
     "public": boolean
     "sizeInBytes": number
     "uuid": UUID
@@ -15,6 +16,7 @@ export type MutableCorpusMetadata = {
     "owner": string
     "eraFrom": number
     "eraTo": number
+    "language": string
     "tagset": string
     "dataset": boolean
     "public": boolean

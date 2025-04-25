@@ -15,13 +15,20 @@
             <!-- id cell -->
             <template #cell-id="d">
                 <ExternalLink v-if="d.item.tagger.id !== SOURCE_LAYER"
-                    :href="`/galahad/overview/taggers#${d.item.tagger.id}`">
+                    :href="`/textlens/overview/taggers#${d.item.tagger.id}`">
                     {{ d.item.tagger.id }}
                 </ExternalLink>
                 <div v-else>
                     <span style="font-weight: bold">{{ d.item.tagger.id }}</span>
                 </div>
             </template>
+
+            <!-- language cell -->
+            <template #cell-language="d">
+                <div v-if="!d.item.tagger.language"><i>Unknown</i></div>
+                <div v-else>{{ d.item.tagger.language }}</div>
+            </template>
+
 
             <!-- tagset cell -->
             <template #cell-tagset="d">
@@ -160,6 +167,10 @@ const displayJobs = computed(() =>
     Object.values(jobsStore.taggableJobs as Job[])
         .filter((job) => {
             // Case insensitive string comparison.
+            return job.tagger.language.toLowerCase() == corporaStore.activeCorpus?.language.toLowerCase()
+        })
+        .filter((job) => {
+            // Case insensitive string comparison.
             return job.tagger.id.toLowerCase().includes(taggerNameFilter.value.toLowerCase())
         })
         .filter(job => {
@@ -190,6 +201,7 @@ const tagsets = computed(() => {
 const columns = computed(() => {
     const publicFields = [
         { key: "id", label: "tagger", sortOn: x => x.tagger.id, textAlign: "left" },
+        { key: "language", sortOn: x => x.tagger.language, textAlign: "left" },
         { key: "tagset", sortOn: x => x.tagger.tagset },
         { key: "produces", label: "type", },
         { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },

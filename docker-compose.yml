@@ -1,10 +1,12 @@
 # Docker compose file for galahad client, server and proxy
 # Note: outside of swarm mode, the deploy key requires use of the --compatibility flag
 
-version: '3'
+version: '1'
 services:
     client:
-        image: instituutnederlandsetaal/galahad-client:${APP_VERSION}
+        image: instituutnederlandsetaal/textlens-client:${APP_VERSION}
+        build:
+            context: client
         restart: unless-stopped
         networks:
             - proxy_network
@@ -17,7 +19,9 @@ services:
                     cpus: '0.25'
                     memory: 128M
     server:
-        image: instituutnederlandsetaal/galahad-server:${APP_VERSION}
+        image: instituutnederlandsetaal/textlens-server:${APP_VERSION}
+        build:
+            context: server
         restart: unless-stopped
         volumes:
             - user-corpora-volume:/data/corpora/custom
@@ -41,7 +45,9 @@ services:
             - "JAVA_OPTS=-XX:+ExitOnOutOfMemoryError"
     # Simple nginx reverse proxy to combine front- and backend
     proxy:
-        image: instituutnederlandsetaal/galahad-proxy:${APP_VERSION}
+        image: instituutnederlandsetaal/textlens-proxy:${APP_VERSION}
+        build:
+            context: proxy
         depends_on:
             - client
             - server

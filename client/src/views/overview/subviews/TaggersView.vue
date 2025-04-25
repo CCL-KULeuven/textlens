@@ -2,11 +2,11 @@
     <div>
         <GTable title="Taggers overview" :columns :items="taggerStore.taggers">
             <template #help>
-                Here you can see an overview of all available taggers within Galahad. <br>
+                Here you can see an overview of all available taggers within textlens. <br>
                 For more information on the taggers, please visit GitHub:
                 <ExternalLink
-                    href="https://github.com/INL/galahad-taggers-dockerized/">
-                    galahad-taggers-dockerized
+                    href="https://github.com/INL/taggers-dockerized/tree/99f5a0e0e120dc6a0ef3f4b069ba45b6bcaa8356">
+                    taggers-dockerized
                 </ExternalLink>
             </template>
 
@@ -28,9 +28,6 @@
                 <i v-else>Unknown</i><br />
             </template>
 
-            <!-- era -->
-
-            <template #cell-era="d"> {{ d.item.eraFrom }} - {{ d.item.eraTo }} </template>
 
             <!-- produces -->
 
@@ -87,9 +84,9 @@ const taggerStore = stores.useTaggers() as TaggersStore
 // Fields
 const columns = [
     { key: "id", label: "name" },
+    { key: "language" },
     { key: "description" },
     { key: "tagset" },
-    { key: "era", label: "period" },
     { key: "produces" },
     { key: "model" },
     { key: "software" },

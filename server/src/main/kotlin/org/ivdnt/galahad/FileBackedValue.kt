@@ -2,17 +2,13 @@ package org.ivdnt.galahad
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.apache.logging.log4j.kotlin.Logging
-import java.io.*
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
-import java.nio.channels.FileLock
-import java.nio.channels.OverlappingFileLockException
-import java.nio.file.StandardOpenOption
+import java.io.File
 
 
 val mapper: ObjectMapper by lazy { ObjectMapper() }
-const val LOCK_SLEEP_TIME = 100L // ms to sleep before retrying to access locked file.
 
 abstract class FileBackedCache<T>(
     file: File,
@@ -60,21 +56,8 @@ open class FileBackedValue<T>(
             // It was not set yet
             return initValue
         }
-
-        val channel = FileChannel.open(file.toPath(), StandardOpenOption.READ)
-        channel.use {
-            val lock = lockFile( channel, false )
-            lock.use {
-                val fileSize = channel.size().toInt()
-                val byteBuffer: ByteBuffer = ByteBuffer.allocate(fileSize)
-                channel.read(byteBuffer)
-                byteBuffer.flip()
-                val bytes: ByteArray = byteBuffer.array()
-                byteBuffer.clear()
-                return mapper.readValue( bytes, object : TypeReference<S>() {})
-            }
-        }
-
+        val bytes: ByteArray = runBlocking(Dispatchers.IO) { file.inputStream().use { it.readBytes() }}
+        return mapper.readValue(bytes, object : TypeReference<S>() {})
     }
 
     /**
@@ -88,41 +71,10 @@ open class FileBackedValue<T>(
         if( !file.exists() ) {
             file.createNewFile()
         }
-
         // Would love to do this atomically, but for now we won't
         val oldValue = read<S>()
-
-        val channel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING )
-        channel.use {
-            val lock = lockFile( channel, true )
-            lock.use {
-                val newValue = modification( oldValue )
-                val newValBytes = mapper.writeValueAsBytes( newValue )
-                logger.trace("will write $newValue")
-                val byteBuffer = ByteBuffer.wrap( newValBytes )
-                channel.write( byteBuffer )
-            }
-        }
+        val newValue = modification(oldValue)
+        val newValBytes = mapper.writeValueAsBytes(newValue)
+        runBlocking(Dispatchers.IO) { file.writeBytes(newValBytes)}
     }
-
-    fun lockFile( channel: FileChannel, exclusive: Boolean ): FileLock? {
-        while (true) {
-            try {
-                return if( exclusive ) {
-                    channel.lock()
-                } else {
-                    channel.lock(0L, Long.MAX_VALUE, true)
-                }
-            } catch (ignored: OverlappingFileLockException) {
-            } catch (ignored: IOException) {
-            }
-            try {
-                logger.info("Tried to read access $file but it was locked. Will sleep for ${LOCK_SLEEP_TIME}ms now then retry.")
-                Thread.sleep(LOCK_SLEEP_TIME)
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-        }
-    }
-
 }

@@ -1,7 +1,7 @@
 package org.ivdnt.galahad.port
 
 import org.ivdnt.galahad.data.document.DocumentFormat
-import org.ivdnt.galahad.taggers.Taggers
+import org.ivdnt.galahad.taggers.TaggerStore
 import org.ivdnt.galahad.tagset.TagsetStore
 import java.io.File
 import java.io.OutputStream
@@ -14,15 +14,18 @@ open class LayerTransformer (
     ) {
 
     private val tagsets = TagsetStore()
-    private val taggers = Taggers()
-    val tagger = taggers.getSummaryOrThrow(transformMetadata.job.name, transformMetadata.corpus.sourceTagger ).expensiveGet()
+    private val taggerStore = TaggerStore()
+    val tagger = taggerStore.getSummaryOrThrow(transformMetadata.job.name, transformMetadata.corpus.sourceTagger ).expensiveGet()
     protected val result = transformMetadata.layer
     protected val document = transformMetadata.document
 
     val punctuationTags = tagsets.getOrNull( tagger.tagset )?.punctuationTags ?: setOf()
 
-    val dateFormat: SimpleDateFormat
+    val dateTimeFormat: SimpleDateFormat
         get() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
+    val dateFormat: SimpleDateFormat
+        get() = SimpleDateFormat("yyyy-MM-dd")
 
 }
 

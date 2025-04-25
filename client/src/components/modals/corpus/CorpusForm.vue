@@ -16,7 +16,17 @@
                             :validator="validateCorpusName" validityDescriptor="3-100 characters" @enter="doAction" />
                     </td>
                 </tr>
+
                 <tr>
+                    <td>
+                        <label>Language:</label> <span class="warning"><small>(Required)</small></span>
+                    </td>
+                    <td>
+                        <GInput type="select" :options="taggersStore.languages" v-model="language" :validator="validateCorpusLang" validityDescriptor="Select a language" class="languageSelect" />
+                    </td>
+                </tr>
+
+<!--                 <tr>
                     <td><label>Year from:</label></td>
                     <td>
                         <GInput v-model.number="eraFrom" validityDescriptor="Must be before end year"
@@ -31,12 +41,12 @@
                         <GInput v-model.number="eraTo" validityDescriptor="Must be after start year" placeholder="YYYY"
                             :validator="(v) => { return v >= eraFrom }" :min="-10000" :max="10000" @enter="doAction" />
                     </td>
-                </tr>
+                </tr> -->
 
                 <tr>
                     <td>
                         <label>
-                            <ExternalLink href="/galahad/overview/tagsets">Tagset</ExternalLink>:
+                            <ExternalLink href="/textlens/overview/tagsets">Tagset</ExternalLink>:
                         </label>
                     </td>
                     <td>
@@ -68,12 +78,12 @@
                     </td>
                 </tr>
 
-                <tr>
+<!--                 <tr>
                     <td><label>Source name:</label></td>
                     <td>
                         <GInput v-model="sourceName" placeholder="source name" @enter="doAction" />
                     </td>
-                </tr>
+                </tr> -->
 
                 <tr>
                     <td><label>Source url:</label></td>
@@ -121,7 +131,8 @@ export default defineComponent({
     setup() {
         const userStore = stores.useUser()
         const tagsetsStore = stores.useTagsets()
-        return { userStore: userStore, tagsetsStore: tagsetsStore }
+        const taggersStore = stores.useTaggers()
+        return { userStore: userStore, tagsetsStore: tagsetsStore, taggersStore: taggersStore }
     },
     data() {
         return {
@@ -130,6 +141,7 @@ export default defineComponent({
             name: "",
             eraFrom: null,
             eraTo: null,
+            language: null,
             tagset: "",
             sourceName: "",
             sourceURL: "",
@@ -154,6 +166,7 @@ export default defineComponent({
                 this.eraFrom === item.eraFrom &&
                 this.eraTo === item.eraTo &&
                 this.tagset === item.tagset &&
+                this.language === item.language &&
                 this.collaborators.join('\n') === item.collaborators.join('\n') &&
                 this.viewers.join('\n') === item.viewers.join('\n') &&
                 this.sourceName === item.sourceName &&
@@ -164,6 +177,7 @@ export default defineComponent({
         },
         isValid() {
             if (!this.validateCorpusName(this.name)) return false
+            if (!this.validateCorpusLang(this.language)) return false
             // check if eras are integer values
             if (this.eraFrom && !Number.isInteger(this.eraFrom)) return false
             if (this.eraTo && !Number.isInteger(this.eraTo)) return false
@@ -179,6 +193,7 @@ export default defineComponent({
                 name: this.name,
                 eraFrom: this.eraFrom,
                 eraTo: this.eraTo,
+                language: this.language,
                 tagset: this.tagset,
                 dataset: this.dataset,
                 public: this.public,
@@ -200,6 +215,7 @@ export default defineComponent({
             this.name = ""
             this.eraFrom = null
             this.eraTo = null
+            this.language = null,
             this.tagset = ""
             this.sourceName = ""
             this.sourceURL = ""
@@ -208,6 +224,9 @@ export default defineComponent({
         },
         validateCorpusName(name: string) {
             return name.toString().match(RegExp("^.{3,100}$"))
+        },
+        validateCorpusLang(lang: object) {
+            return lang
         },
         validateSourceURL(url: string): string {
             if (!url) return url
@@ -229,6 +248,7 @@ export default defineComponent({
                 this.viewers = [...newValue.viewers]
                 this.eraFrom = newValue.eraFrom
                 this.eraTo = newValue.eraTo
+                this.language = newValue.language
                 this.tagset = newValue.tagset
                 this.sourceName = newValue.sourceName
                 this.sourceURL = newValue.sourceURL

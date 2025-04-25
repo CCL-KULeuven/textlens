@@ -5,11 +5,10 @@ import org.ivdnt.galahad.data.layer.Layer
 import org.ivdnt.galahad.data.layer.Term
 import org.ivdnt.galahad.data.layer.WordForm
 import org.ivdnt.galahad.port.tei.export.TEITextMerger
-import org.ivdnt.galahad.util.insertFirst
 import org.ivdnt.galahad.port.xml.reparseText
 import org.ivdnt.galahad.port.xml.tagName
-import org.ivdnt.galahad.util.childOrNull
 import org.ivdnt.galahad.util.insertAfter
+import org.ivdnt.galahad.util.insertFirst
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -42,8 +41,6 @@ class FoliaTextMerger(
                 if (node.nodeType == Node.TEXT_NODE) {
                     child.textContent = text
                 }
-                // TODO reparseText overwrites embedded t-styles
-
                 // never set the offset of more than one space.
                 if (endsWithSpace && text.startsWith(" ")) {
                     offset -= 1
@@ -123,8 +120,8 @@ class FoliaTextMerger(
     }
 
     private fun Element.addTerm(term: Term) {
-        this.addTermFeature("lemma", term.lemma.toString())
-        this.addTermFeature("pos", term.pos.toString(), term.posHeadGroup)
+        this.addTermFeature("lemma", term.lemmaOrEmpty)
+        this.addTermFeature("pos", term.posOrEmpty, term.posHeadGroupOrEmpty)
     }
 
     private fun Element.addTermFeature(name: String, value: String, head: String? = null) {

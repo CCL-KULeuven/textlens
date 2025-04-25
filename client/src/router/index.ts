@@ -43,7 +43,8 @@ const routes = [
   { path: '/:pathMatch(.*)*', component: PageNotFound },
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/annotate'
+    //component: AnnotateView,
   },
   {
     path: '/home',
@@ -134,26 +135,25 @@ const routes = [
   }, {
     path: '/contribute', component: ContributeView, children: [
       { path: 'taggers', component: ContributeTaggersView },
-      { path: 'datasets', component: ContributeDatasetsView }
     ]
   }, {
     path: '/help',
     name: 'Help',
-    redirect: '/help/general',
+    redirect: '/help/formats',
     component: HelpView,
     children: [
-      {
+/*       {
         path: 'general',
         component: GeneralView
-      },
+      }, */
       {
         path: 'formats',
         component: DocumentFormatsView
       },
-      {
+/*       {
         path: 'glossary',
         component: GlossaryView
-      },
+      }, */
     ]
   }, {
     path: '/user',
@@ -162,7 +162,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory('/galahad/'), //import.meta.env.BASE_URL ),
+  history: createWebHistory('/textlens/'), //import.meta.env.BASE_URL ),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (to && to.hash) {

@@ -1,0 +1,127 @@
+# For displaying in user interface (optional)
+displayName: Galahad Exported TEI - Cobalt compatible
+
+# For describing input format in user interface (optional)
+description: Galahad Exported TEI - Cobalt compatible
+
+helpUrl: http://www.tei-c.org/Guidelines/P5/
+
+# (Optional, informational)
+# content, metadata or mixed?
+# (not used by BlackLab, purely informational for the frontend application)
+type: content
+
+processor: saxon
+namespaces:
+  'tei': http://www.tei-c.org/ns/1.0
+  '' : http://www.tei-c.org/ns/1.0
+ 
+
+# What element starts a new document?
+# (the only absolute XPath; the rest is relative)
+documentPath: //TEI
+
+# Annotated, CQL-searchable fields (also called "complex fields").
+# We usually have just one, named "contents".
+annotatedFields:
+
+  contents:
+
+    # How to display the field in the interface (optional)
+    displayName: Contents
+
+    # How to describe the field in the interface (optional)
+    description: Contents of the documents.
+
+    # What element (relative to document) contains this field's contents?
+    # (if omitted, entire document is used)
+    containerPath: .//text
+
+    # What are our word tags? (relative to container)
+    wordPath: .//w[not (ancestor::note)]     # (body geldt niet voor OpenSonar, maar ter illustratie)
+
+    # Punctuation between word tags (relative to container)
+    punctPath: .//text()[not(ancestor::w or ancestor::interpGrp)]   # = "all text nodes (under containerPath) not inside a <w/> element"
+
+    # What annotation can each word have? How do we index them?
+    # (annotations are also called "(word) properties" in BlackLab)
+    # (valuePaths relative to word path)
+    # NOTE: forEachPath is NOT allowed for annotations, because we need to know all annotations before indexing,
+    #       and with forEachPath you could run in to an unknown new annotation mid-way through.
+    #                 <w lemma="voorschrijven" type="NOU" xml:id="w.81">vors<expan resp="editor">creven</expan></w>
+
+    annotations:
+
+    - name: word
+      displayName: Word
+      valuePath: if (./seg) then ./seg else (.)
+      uiType: select
+      sensitivity: sensitive_insensitive
+
+    - name: lemma
+      displayName: Lemma
+      valuePath: ./@lemma
+      uiType: select
+      sensitivity: sensitive_insensitive
+
+    - name: punctuation # dit is lelijk en zou anders moeten
+      displayName: Punctuation
+      valuePath: preceding-sibling::*[self::w or self::pc][1][self::pc]
+
+    - name: pos
+      displayName: Part of speech
+      valuePath: ./@pos
+      uiType: select
+
+    - name: grouping_lemma
+      displayName: Grouping Lemma
+      valuePath: ./@lemma
+      uiType: select
+      sensitivity: sensitive
+
+    - name: grouping_pos_full
+      displayName: Grouping Part of speech (met features)
+      valuePath: ./@pos
+      uiType: select
+ 
+    # XML tags within the content we'd like to index
+    # (relative to container)
+    inlineTags:
+    - path: .//p   # Paragraph
+    - path: .//s   # Sentence
+    - path: .//pb  # Page beginning
+    - path: .//lb  # Line beginning
+
+# metadata
+metadata:
+  containerPath: //listBibl[@xml:id="galahadMetadata"]
+  fields:
+  - forEachPath: bibl/interpGrp
+    namePath: "@type"                  # interpGrp/@type
+    valuePath: ./interp/text()
+
+  - name: pid # misschien beter uit /@xml:id halen
+    type: untokenized
+    uiType: select
+
+  - name: title # of uit titleStmt/title in header halen?
+
+
+corpusConfig:
+  contentViewable: true
+
+  specialFields: 
+    pidField: pid
+    titleField: title
+
+
+  metadataFieldGroups:
+  - name: Basic
+    fields: 
+    - pid
+    - title
+    # witnessYear_from witnessYear_to in customjs
+
+ 
+  - name: Other
+    addRemainingFields: true

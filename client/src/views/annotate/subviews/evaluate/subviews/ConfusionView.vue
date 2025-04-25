@@ -44,9 +44,8 @@
 
         </GTable>
 
-        <ComparisonModal :show="showModal" @hide="showModal = false" :samples="samples" :downloading
-            @download="(data) => download(data)" :referenceJob="jobSelection.referenceJobId"
-            :hypothesisJob="jobSelection.hypothesisJobId" />
+        <ComparisonModal :show="showModal" @hide="showModal = false" :samples="samples"
+            :referenceJob="jobSelection.referenceJobId" :hypothesisJob="jobSelection.hypothesisJobId" />
 
         <EvaluationInfoBox :eval="confusion" />
 
@@ -56,31 +55,25 @@
 <script setup lang='ts'>
 // Libraries & stores
 import { computed, ref } from 'vue'
-import stores, { JobSelectionStore, CorporaStore, AppStore } from '@/stores'
+import stores, { JobSelectionStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 // API & types
 import { Field } from '@/types/table'
 import { TermComparison, EvaluationEntry } from "@/types/evaluation"
 import { MISC } from '@/stores/evaluation/confusion'
-import * as API from '@/api/evaluation'
-import * as Utils from "@/api/utils"
 // Components
 import { GButton, GInfo, GTable, EvaluationInfoBox, ComparisonModal } from '@/components'
 import DifferentTagsetsHelp from '@/components/help/DifferentTagsetsHelp.vue'
 
 // Stores
 const { loading, confusion } = storeToRefs(stores.useConfusion())
-const corporaStore = stores.useCorpora() as CorporaStore
 const jobSelection = stores.useJobSelection() as JobSelectionStore
-const app = stores.useApp() as AppStore
 
 // Custom types
 type Item = { [key: string]: EvaluationEntry } & { referenceJob: string }
 type Cell = { field: Field; item: Item; value: EvaluationEntry }
 
-// Fields
-const downloading = ref(false)
-const modalData = ref({})
+
 const samples = ref({ title: "", samples: [] } as { title: string, samples: TermComparison[] })
 const showModal = ref(false)
 
@@ -132,18 +125,6 @@ const rows = computed((): Item[] => {
 })
 
 // Methods
-function download() {
-    const data = modalData.value
-    const hypothesisPos = data.field.key
-    const referencePos = data.item.referenceJob
-    downloading.value = true
-    API.getDownloadPosConfusion(corporaStore.activeUUID, jobSelection.hypothesisJobId, jobSelection.referenceJobId, hypothesisPos, referencePos)
-        .then((response) => {
-            Utils.browserDownloadResponseFile(response)
-        })
-        .catch(res => Utils.handleBlobError(res, "download confusion samples", app))
-        .finally(() => downloading.value = false)
-}
 /**
  * Case insensitive string compare.
  */
@@ -177,7 +158,6 @@ function cssClass(data) {
 }
 
 function openModal(data) {
-    modalData.value = data
     samples.value = {
         agreement: strEqual(data.field.key, data.item.referenceJob),
         samples: data.value.samples,

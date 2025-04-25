@@ -1,7 +1,7 @@
 <template>
     <GTabs class="level-2" basePath="/application" :tabs="[
         { id: 'about', title: 'About' },
-        { id: 'api', title: 'API', stub: true },
+        //{ id: 'api', title: 'API', stub: true },
     ]">
 
         <template #api-title>
@@ -15,7 +15,7 @@
 // Components
 import { GTabs, ExternalLink } from '@/components'
 
-const apiURL = window.location.protocol + '//' + window.location.hostname + "/galahad/api/swagger-ui/index.html"
+const apiURL = window.location.protocol + '//' + window.location.hostname + "/api/swagger-ui/index.html"
 
 </script>
 

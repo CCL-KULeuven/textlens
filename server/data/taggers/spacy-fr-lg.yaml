@@ -1,0 +1,22 @@
+id: spacy-fr-lg
+description: "spaCy fr_core_news_lg 3.8.0"
+tagset: UPOS
+eraFrom: "0"
+eraTo: "2024"
+language: "French"
+produces:
+  - TOK
+  - LEM
+  - POS
+model:
+  name: fr_core_news_lg
+  href: https://github.com/explosion/spacy-models/releases/tag/fr_core_news_lg-3.8.0
+software:
+  name: spaCy
+  href: https://spacy.io/models/fr
+dataset:
+  name: UD French Sequoia v2.8, WikiNER
+  href: https://github.com/explosion/spacy-models/releases/tag/fr_core_news_lg-3.8.0
+trainedBy: "spaCy"
+date: "2024-05-30"
+devport: 8122
