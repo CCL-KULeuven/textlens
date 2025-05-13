@@ -79,19 +79,19 @@
                     <GNav v-if="!corporaStore.hasDocs" :route="{ path: '/annotate/data/documents' }">
                         Upload documents to start job
                     </GNav>
-                    <GButton v-else @click="jobId = d.item.tagger.id"> View &amp; Tag
+                    <GButton yellow v-else @click="jobId = d.item.tagger.id"> <i class="fa fa-code"></i>Tag
                     </GButton>
                 </template>
 
                 <template #prepend>
 
-                    <div class="table-controls">
+                    <!-- <div class="table-controls">
 
                         <div class="table-control">
                             Search tagger name:
                             <GInput type="text" v-model="taggerNameFilter" placeholder="Tagger name" clearBtn></GInput>
                         </div>
-                    </div>
+                    </div> -->
                     <p>
                         Showing <b>{{ displayJobs.length }}</b> applicable {{ displayJobs.length == 1 ? ' tagger' : ' taggers' }}.
                     </p>
@@ -178,7 +178,7 @@ const columns = computed(() => {
         { key: "tagset", sortOn: x => x.tagger.tagset },
         { key: "produces", label: "type", },
         { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },
-        { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
+       // { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
         { key: "lastModified", label: "last modified", sortOn: x => x.lastModified },
         { key: "progress", sortOn: x => x.progress.finished / x.progress.total },
     ] as Field[];

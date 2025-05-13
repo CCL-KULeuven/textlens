@@ -1,19 +1,27 @@
-export type Assay = {
-    name: string
-    count: number
-    bothAgree: number
-    lemmaAgree: number
-    lemmaDisagree: number
-    posAgree: number
-    posDisagree: number
-    noMatch: number
+export type ClassificationMetrics = {
+    accuracy: number
+    precision: number
+    recall: number
+    f1: number
 }
 
-export type AssayDescription = {
-    id: string
-    description: string
+export type TaggerAssay = {
+    micro: ClassificationMetrics
+    macro: ClassificationMetrics
 }
 
-type TaggerName = string
-type DatasetName = string
-export type AssaysType = Record<TaggerName, Record<DatasetName, Assay>>
+export type MetricTypeAssay = {
+    [taggerName: string]: TaggerAssay
+}
+
+export type DatasetAssay = {
+    [metricName: string]: MetricTypeAssay
+}
+
+export type Assays = {
+    [datasetName: string]: DatasetAssay
+}
+
+export type IndividualAssay = {
+    [metricName: string]: TaggerAssay
+}

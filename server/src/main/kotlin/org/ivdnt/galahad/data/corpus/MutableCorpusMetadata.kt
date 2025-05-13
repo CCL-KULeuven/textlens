@@ -20,7 +20,6 @@ open class MutableCorpusMetadata(
     @JsonProperty("language") val language: String,
     @JsonProperty("tagset") var tagset: String?,
     @JsonProperty("dataset") @JsonInclude(JsonInclude.Include.ALWAYS) val isDataset: Boolean,
-    @JsonProperty("public") @JsonInclude(JsonInclude.Include.ALWAYS) var isPublic: Boolean,
     @JsonProperty("collaborators") @Nullable
     var collaborators: Set<String>?, // Empty lists show up as null after serialization
     @JsonProperty("viewers") @Nullable var viewers: Set<String>?,
@@ -33,7 +32,7 @@ open class MutableCorpusMetadata(
      * Note that this is not the same as having write access: use [hasWriteAccess].
      */
     fun isCollaborator(user: User): Boolean {
-        return collaborators?.contains(user.id) ?: false
+        return collaborators?.contains(user.id) == true
     }
 
     /**
@@ -41,7 +40,7 @@ open class MutableCorpusMetadata(
      * Note that this is not the same as having read access: use [hasReadAccess].
      */
     fun isViewer(user: User): Boolean {
-        return viewers?.contains(user.id) ?: false
+        return viewers?.contains(user.id) == true
     }
 
     /** To have write access, you need to be an owner, collaborator or admin. */
@@ -63,8 +62,8 @@ open class MutableCorpusMetadata(
         return owner == user.id
     }
 
-    /** Only admins can make corpora public. */
-    fun canMakePublic(user: User): Boolean {
+    /** Only admins can make corpora into benchmark datasets. */
+    fun canDefineDataset(user: User): Boolean {
         return user.isAdmin
     }
 
@@ -78,7 +77,6 @@ open class MutableCorpusMetadata(
             if (user.isAdmin) return true
         }
         if (isDataset) return true // technically, datasets are always public, but still.
-        if (isPublic) return true
         if (isCollaborator(user)) return true
         if (isViewer(user)) return true
         if (owner == user.id) return true
@@ -96,7 +94,6 @@ open class MutableCorpusMetadata(
                 language = "",
                 tagset = null,
                 isDataset = false,
-                isPublic = false,
                 collaborators = null,
                 sourceName = null,
                 sourceURL = null,

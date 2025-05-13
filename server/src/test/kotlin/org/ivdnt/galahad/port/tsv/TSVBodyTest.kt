@@ -2,6 +2,12 @@ package org.ivdnt.galahad.port.tsv
 
 import org.ivdnt.galahad.data.layer.Layer
 import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.data.layer.AnnotationType
+import org.ivdnt.galahad.data.layer.Annotations
+import org.ivdnt.galahad.data.layer.Term
+import org.ivdnt.galahad.data.layer.lemma
+import org.ivdnt.galahad.data.layer.pos
+import org.ivdnt.galahad.data.layer.token
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -55,14 +61,14 @@ internal class TSVBodyTest {
         assertSourceLayer(tsvFile.sourceLayer())
     }
 
-    private fun assertEntries(entries: ArrayList<TSVEntry>) {
+    private fun assertEntries(entries: ArrayList<Annotations>) {
         assertEquals(2, entries.size)
         val first = entries[0]
-        assertEquals("scholen", first.literal)
+        assertEquals("scholen", first.token)
         assertEquals("school", first.lemma)
         assertEquals("NOU", first.pos)
         val second = entries[1]
-        assertEquals("loop", second.literal)
+        assertEquals("loop", second.token)
         assertEquals("lopen", second.lemma)
         assertEquals("VRB", second.pos)
     }
@@ -94,7 +100,7 @@ internal class TSVBodyTest {
         assertEquals(wf, term.targets[0])
         assertEquals(false, term.isMultiTarget)
         assertEquals(literal, term.literals)
-        assertEquals(null, term.posFeatures)
-        assertEquals(pos, term.posHead)
+        assertEquals(null, Term.features(term.pos))
+        assertEquals(pos, term.annotationHead(AnnotationType.POS))
     }
 }

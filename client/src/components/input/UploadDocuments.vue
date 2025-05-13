@@ -1,10 +1,12 @@
 <template>
     <div>
-
+        <!-- Drag and drop from https://codepen.io/nekobog/pen/JjoZvBm -->
+        <div id="dropZone"></div>
+         
         <!-- Styled label for input -->
         <label for="file-upload" class="custom-file-upload">
-            <i class="fa fa-upload"></i> 
-            Upload file(s)
+            <i class="fa fa-file-text"></i>
+            Select file(s) or drag & drop
         </label>
         <!-- Actual input -->
         <input type="file" ref="uploadInput" name="filefield" multiple id="file-upload" style="display: none;"
@@ -23,18 +25,20 @@
         </ul>
 
         <!-- Confirmation and clear buttons after a selection has been made -->
+        
         <template v-if="filesToUpload.length != 0">
-            <GButton green @click="documentsStore.uploadAll(); $refs.uploadInput.value = null">
-                Upload
+
+            <GButton orange @click="filesToUpload = []; $refs.uploadInput.value = null">
+                <i class="fa fa-times"></i> Clear
             </GButton>
-            <GButton plain @click="filesToUpload = []; $refs.uploadInput.value = null">
-                &#10006;&nbsp;clear
+            <GButton green @click="documentsStore.uploadAll(); $refs.uploadInput.value = null">
+                <i class="fa fa-upload"></i> Upload
             </GButton>
         </template>
 
         <!-- Error for illegal selection -->
         <GInfo error v-if="illegalFiles.length > 0">
-            You have selected some filetype(s) that are not supported in textlens:
+            You have selected some filetype(s) that are not supported in GaLAHaD:
             <ul>
                 <li v-for="file in illegalFiles" :key="file.name">
                     {{ file.name }}
@@ -66,6 +70,7 @@
 
 <script setup lang='ts'>
 // Libraries & stores
+import { onMounted, ref } from 'vue'
 import stores from '@/stores'
 import { storeToRefs } from 'pinia'
 // Components
@@ -74,9 +79,38 @@ import { GButton, GInfo } from '@/components'
 // Stores
 const documentsStore = stores.useDocuments()
 const { filesToUpload, illegalFiles, uploadBusyCount, uploadErrorCount, uploading } = storeToRefs(documentsStore)
+
+// Fields
+var dropZone = ref(null as any as HTMLElement);
+
+// Methods
+function showDropZone(e: DragEvent) {
+    if (e.dataTransfer!.types.includes('Files')) {
+        dropZone.value.style.display = "block"
+    }
+}
+function hideDropZone() {
+    dropZone.value.style.display = "none";
+}
+function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    hideDropZone();
+    filesToUpload.value = [...e.dataTransfer!.files]
+}
+
+// Watches & mounts
+onMounted(() => {
+    dropZone.value = document.getElementById('dropZone') as HTMLElement;
+    // Register drag events
+    window.addEventListener('dragenter', showDropZone)
+    dropZone.value.addEventListener('dragleave', hideDropZone)
+    dropZone.value.addEventListener('drop', handleDrop)
+    // Apparently, this is needed to prevent the browser from opening the file.
+    dropZone.value.addEventListener('dragover', e => e.preventDefault())
+})
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .custom-file-upload {
     border: 0px solid #ccc;
     background-color: var(--int-theme);
@@ -100,5 +134,17 @@ ol {
     width: fit-content;
     text-align: left;
     margin: 1em auto;
+}
+
+#dropZone {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--int-theme);
+    opacity: 0.4;
+    z-index: 3;
 }
 </style>

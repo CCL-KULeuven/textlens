@@ -94,7 +94,9 @@
                     <div style="display: flex;">
 
                         <DownloadButton @click="download(data.item)" />
-
+                        <GButton yellow @click="annotateCorpusData = corpus; showDeleteModal = false;" title="Annotate Data">
+                            <i class="fa fa-code"></i>
+                        </GButton>
                         <GButton red @click="deleteDocumentData = data.item; showDeleteModal = true" title="Delete">
                             <i class="fa fa-trash"></i>
                         </GButton>
@@ -124,6 +126,13 @@
             :displayname="'document ' + (deleteDocumentData !== null ? deleteDocumentData.name : '[null]') + ' and associated results'"
             @hide="showDeleteModal = false" @delete="deleteDocument" />
 
+        <!-- Annotate modal -->
+        <AnnotateModal title="Annotate" :corpus="annotateCorpusData" :show="annotateCorpusData !== null" @hide="annotateCorpusData = null; $emit('hide')"
+            :cancel="() => annotateCorpusData = null">
+            <template #help>Tag your data with the available taggers.          
+            </template>
+        </AnnotateModal>
+
     </div>
     
 </template>
@@ -140,6 +149,7 @@ import { CorpusMetadata } from '@/types/corpora'
 import { LayerPreview, SOURCE_LAYER } from '@/types/jobs'
 // Components
 import { GButton, GModal, GTable, DownloadButton, DeleteModal, RightFloatCell, InspectButton } from '@/components'
+import AnnotateModal from "@/components/modals/AnnotateModal.vue"
 import LayerViewer from '@/components/tables/LayerViewer.vue'
 import UploadDocuments from '@/components/input/UploadDocuments.vue'
 import help from '@/components/help'
@@ -160,6 +170,7 @@ const props = defineProps({
 // Fields
 const deleteDocumentData = ref(null as null | DocumentMetadata)
 const previewDocument = ref(null as null | DocumentMetadata)
+const annotateCorpusData = ref(null as null | CorpusMetadata)
 const preview = ref(null as null | LayerPreview)
 const showDeleteModal = ref(false)
 const loading = ref(false)
@@ -194,6 +205,7 @@ function download(document: DocumentMetadata) {
     return documentsStore.downloadRaw(document.name)
 }
 function loadSourceLayer() {
+    console.log("loading src layer")
     loading.value = true
     API.getJobDocumentResult(props.corpus?.uuid, SOURCE_LAYER, previewDocument.value.name)
         .then(response => {

@@ -24,9 +24,9 @@ const options = [
     { value: Format.Tei_p5, text: "TEI P5 (Text Encoding Initiative)" },
     { value: Format.Tsv, text: "TSV (Tab-separated values)" },
 ]
-// Admins can also export txt.
+/* // Admins can also export txt.
 if (userStore.user.admin) {
     // This exports the plain text, not the annotations.
     options.push({ value: Format.Txt, text: "TXT (Plain text)" })
-}
+} */
 </script>

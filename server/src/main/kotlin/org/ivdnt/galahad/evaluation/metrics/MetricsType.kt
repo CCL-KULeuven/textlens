@@ -5,8 +5,24 @@ import org.ivdnt.galahad.data.layer.Term
 import org.ivdnt.galahad.evaluation.CsvSampleExporter
 import org.ivdnt.galahad.evaluation.EvaluationEntry
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
+import org.ivdnt.galahad.exceptions.InvalidClassificationTypeException
 import org.ivdnt.galahad.port.csv.CSVFile
+import org.ivdnt.galahad.taggers.Tagger
 import org.ivdnt.galahad.util.toFixed
+
+enum class ClassificationType(val value: String) {
+    TRUE_POSITIVE("truePositive"),
+    FALSE_POSITIVE("falsePositive"),
+    FALSE_NEGATIVE("falseNegative"),
+    NO_MATCH("noMatch");
+
+    companion object {
+        fun fromString(s: String): ClassificationType =
+            ClassificationType.values().firstOrNull { it.value == s } ?: throw InvalidClassificationTypeException(
+                "Invalid value $s, valid values are ${values().map { it.value }}"
+            )
+    }
+}
 
 typealias FlatMetricTypeAssay = Map<String, FlatMetricType>
 class FlatMetricType(
@@ -16,7 +32,9 @@ class FlatMetricType(
 
 class MetricsType(
     val setting: MetricsSettings,
-    @JsonIgnore var truncate: Boolean = true
+    val hypothesis: Tagger,
+    val reference: Tagger,
+    @JsonIgnore var truncate: Boolean = true,
 ) : CsvSampleExporter {
     @JsonIgnore
     var map: MutableMap<String, Metric> = HashMap()
@@ -149,28 +167,30 @@ class MetricsType(
         return Pair(trues, falses)
     }
 
-    fun samplesToCsv(group: String, classType: String): String {
+    fun samplesToCsv(group: String, classType: ClassificationType): String {
         return when (classType) {
-            "truePositive" -> samplesToCSV(map[group]?.cls?.truePositive?.samples)
-            "falsePositive" -> samplesToCSV(map[group]?.cls?.falsePositive?.samples)
-            "falseNegative" -> samplesToCSV(map[group]?.cls?.falseNegative?.samples)
-            "noMatch" -> samplesToCSV(map[group]?.cls?.noMatch?.samples)
+            ClassificationType.TRUE_POSITIVE -> samplesToCSV(map[group]?.cls?.truePositive?.samples)
+            ClassificationType.FALSE_POSITIVE -> samplesToCSV(map[group]?.cls?.falsePositive?.samples)
+            ClassificationType.FALSE_NEGATIVE -> samplesToCSV(map[group]?.cls?.falseNegative?.samples)
+            ClassificationType.NO_MATCH -> samplesToCSV(map[group]?.cls?.noMatch?.samples)
+        }
+    }
+
+    fun samplesToCsv(classType: ClassificationType): String {
+        return when (classType) {
+            ClassificationType.TRUE_POSITIVE -> samplesToCSV(classes.truePositive.samples)
+            ClassificationType.FALSE_NEGATIVE -> samplesToCSV(classes.falseNegative.samples)
+            ClassificationType.NO_MATCH -> samplesToCSV(classes.noMatch.samples)
             else -> ""
         }
     }
 
-    fun samplesToCsv(classType: String): String {
-        return when (classType) {
-            "truePositive" -> samplesToCSV(classes.truePositive.samples)
-            "falseNegative" -> samplesToCSV(classes.falseNegative.samples)
-            "noMatch" -> samplesToCSV(classes.noMatch.samples)
-            else -> ""
-        }
-    }
 
+    fun samplesToCSV(comps: List<TermComparison>?): String {
+        return samplesToCSV(comps, hypothesis, reference)
+    }
 
     override fun samplesToCSV(): String {
-        val cls = listOf(classes.falsePositive, classes.falseNegative, classes.truePositive)
-        return samplesToCSV(cls.flatMap { it.samples })
+        throw NotImplementedError()
     }
 }

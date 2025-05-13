@@ -1,0 +1,348 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "@type": "SoftwareSourceCode",
+    "dateCreated": "2024-05-31",
+    "datePublished": "2024-05-31",
+    "applicationCategory": [
+        "https://w3id.org/nwo-research-fields#Linguistics",
+        "https://w3id.org/nwo-research-fields#ComputationalLinguisticsAndPhilology",
+        "https://w3id.org/nwo-research-fields#ArtificialIntelligenceExpertSystems",
+        "https://w3id.org/nwo-research-fields#SoftwareForHumanities",
+        "https://w3id.org/nwo-research-fields#TextualAndLinguisticCorpora",
+        "https://vocabs.dariah.eu/tadirah/enriching",
+        "https://vocabs.dariah.eu/tadirah/posTagging",
+        "https://vocabs.dariah.eu/tadirah/tagging",
+        "https://vocabs.dariah.eu/tadirah/annotating",
+        "https://vocabs.dariah.eu/tadirah/merging",
+        "https://vocabs.dariah.eu/tadirah/converting",
+        "https://vocabs.dariah.eu/tadirah/lemmatizing",
+        "https://vocabs.dariah.eu/tadirah/machineLearning",
+        "https://vocabs.dariah.eu/tadirah/comparing",
+        "https://vocabs.dariah.eu/tadirah/analyzing"
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "@id": "http://orcid.org/0009-0006-9941-9582",
+            "email": "vincent.prins@ivdnt.org",
+            "familyName": "Prins",
+            "givenName": "Vincent"
+        },
+        {
+            "@type": "Person",
+            "familyName": "Brouwer",
+            "givenName": "Tim"
+        }
+    ],
+    "contributor": [
+        "http://orcid.org/0009-0006-9941-9582",
+        {
+            "@type": "Person",
+            "familyName": "Brouwer",
+            "givenName": "Tim"
+        }
+    ],
+    "maintainer": "http://orcid.org/0009-0006-9941-9582",
+    "codeRepository": "git+https://github.com/INL/galahad.git",
+    "description": "GaLAHaD (Generating Linguistic Annotations for Historical Dutch) allows linguists to compare taggers, tag their own corpora, evaluate the results and export their tagged documents.",
+    "downloadUrl": "https://github.com/INL/galahad",
+    "license": "http://spdx.org/licenses/Apache-2.0",
+    "name": "GaLAHaD",
+    "identifier": "galahad",
+    "funding": [
+        {
+            "@type": "Grant",
+            "name": "CLARIAH-PLUS (NWO grant 184.034.023)",
+            "funder": {
+                "@type": "Organization",
+                "name": "NWO",
+                "url": "https://www.nwo.nl"
+            }
+        }
+    ],
+    "operatingSystem": "Linux",
+    "programmingLanguage": [
+        "Kotlin",
+        "Javascript",
+        "Typescript"
+    ],
+    "runtimePlatform": [
+        "JVM",
+        "Node"
+    ],
+    "codemeta:contIntegration": {
+        "id": "https://github.com/INL/galahad/actions"
+    },
+    "continuousIntegration": "https://github.com/INL/galahad/actions",
+    "developmentStatus": [
+        "https://www.repostatus.org/#active",
+        "https://w3id.org/research-technology-readiness-levels#Level6LatePrototype"
+    ],
+    "producer": {
+        "@type": "Organization",
+        "name": "Instituut voor de Nederlandse taal",
+        "@id": "https://www.ivdnt.org",
+        "url": "https://www.ivdnt.org"
+    },
+    "issueTracker": "https://github.com/INL/galahad/issues",
+    "readme": "https://github.com/INL/Galahad/blob/release/readme.md",
+    "releaseNotes": "https://github.com/INL/Galahad/releases",
+    "softwareHelp": [
+        {
+            "@id": "https://portal.clarin.ivdnt.org/galahad/help",
+            "@type": "WebSite",
+            "name": "GaLAHaD Help",
+            "url": "https://portal.clarin.ivdnt.org/galahad/help"
+        }
+    ],
+    "targetProduct": [
+        {
+            "@type": "WebApplication",
+            "name": "GaLAHaD",
+            "provider": "https://www.ivdnt.org",
+            "url": "https://portal.clarin.ivdnt.org/galahad"
+        },
+        {
+            "@type": "WebAPI",
+            "name": "GaLAHaD API",
+            "provider": "https://www.ivdnt.org",
+            "endpointUrl": {
+                "@type": "EntryPoint",
+                "url": "https://portal.clarin.ivdnt.org/galahad/api",
+                "contentType": "application/json"
+            },
+            "endpointDescription": {
+                "@type": "CreativeWork",
+                "encodingFormat": "application/json",
+                "url": "https://portal.clarin.ivdnt.org/galahad/api/v3/api-docs"
+            },
+            "documentation": "https://portal.clarin.ivdnt.org/galahad/api/swagger-ui/index.html",
+            "consumesData": [
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "text/plain"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "application/folia+xml"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "application/tei+xml"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "text/tab-separated-values"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "https://github.com/newsreader/NAF"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "https://universaldependencies.org/format.html"
+                }
+            ],
+            "producesData": [
+                {
+                    "@type": "CreativeWork",
+                    "encodingFormat": "application/zip"
+                }
+            ]
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD client Docker image"
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD server Docker image"
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD proxy Docker image"
+        }
+    ],
+    "softwareRequirements": [
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@primevue/themes",
+            "name": "@primevue/themes"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/uuid",
+            "name": "@types/uuid"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@vitejs/plugin-vue",
+            "name": "@vitejs/plugin-vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "axios",
+            "name": "axios"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "buffer",
+            "name": "buffer"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "content-disposition",
+            "name": "content-disposition"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "js-yaml",
+            "name": "js-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "json-loader",
+            "name": "json-loader"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "pinia",
+            "name": "pinia"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "primevue",
+            "name": "primevue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "safe-buffer",
+            "name": "safe-buffer"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "uuid",
+            "name": "uuid"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue",
+            "name": "vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue-router",
+            "name": "vue-router"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue-slider-component",
+            "name": "vue-slider-component"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@rollup/plugin-yaml",
+            "name": "@rollup/plugin-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/jest",
+            "name": "@types/jest"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/js-yaml",
+            "name": "@types/js-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@typescript-eslint/eslint-plugin",
+            "name": "@typescript-eslint/eslint-plugin"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@typescript-eslint/parser",
+            "name": "@typescript-eslint/parser"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@vue/eslint-config-typescript",
+            "name": "@vue/eslint-config-typescript"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "eslint",
+            "name": "eslint"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "eslint-plugin-vue",
+            "name": "eslint-plugin-vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "mutationobserver-shim",
+            "name": "mutationobserver-shim"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "sass",
+            "name": "sass"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "typescript",
+            "name": "typescript"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vite",
+            "name": "vite"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-starter-web",
+            "name": "spring-boot-starter-web"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-devtools",
+            "name": "spring-boot-devtools"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-starter-test",
+            "name": "spring-boot-starter-test"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.jetbrains.kotlin.kotlin-reflect",
+            "name": "kotlin-reflect"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
+            "name": "kotlinx-coroutines-core-jvm"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springdoc.springdoc-openapi-starter-webmvc-ui",
+            "name": "springdoc-openapi-starter-webmvc-ui"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.apache.logging.log4j.log4j-api-kotlin",
+            "name": "log4j-api-kotlin"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.yaml.snakeyaml",
+            "name": "snakeyaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "com.beust.klaxon",
+            "name": "klaxon"
+        }
+    ]
+}

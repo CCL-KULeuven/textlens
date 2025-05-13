@@ -78,8 +78,8 @@
             </div>
 
             <!-- Layer preview -->
-            <GCard noHelp title="Preview" style="text-align: center">
-                <LayerViewer :layer="job.preview" :uid="job.tagger.id" />
+            <GCard noHelp title="Preview" headless style="text-align: center">
+                <LayerViewer :layer="job.preview" />
             </GCard>
 
             <!-- errors -->
@@ -115,6 +115,7 @@ import { Job } from "@/types/jobs"
 import * as API from "@/api/taggers"
 // Components
 import { GButton, GCard, GInfo, GModal, GSpinner, DeleteModal } from "@/components"
+import { watch } from 'vue/dist/vue.esm-bundler' // bug doesn't let use use 'vue' here
 import LayerViewer from "@/components/tables/LayerViewer.vue"
 import ProgressSegment from "@/components/modals/jobs/ProgressSegment.vue"
 
@@ -131,6 +132,7 @@ const props = defineProps({
 const job = computed<Job>(() => {
     return jobsStore.jobs[props.jobId]
 })
+
 /** Returns null while we are waiting on the first getHealth request. */
 const taggerIsAvailable = computed<boolean | null>(() => {
     if (!health.value) return null
@@ -154,6 +156,9 @@ const healthLoading = ref(true)
 let healthIntervalId = 0
 
 // Watches & mounts
+
+
+
 /** 
  * Every time this GModal opens: One health ping now, the rest on an interval.
  */
@@ -162,6 +167,7 @@ onMounted(() => {
     healthIntervalId = setInterval(getHealth, 5000)
     // Set to null to induce 'calculating' every time the modal opens.
     jobsStore.getDocsAtTagger()
+    jobsStore.reload()
 })
 /**
  * Stop pinging health on modal close.

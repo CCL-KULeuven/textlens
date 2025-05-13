@@ -1,30 +1,30 @@
 <template>
     <div class="center">
-        <GCard title="Benchmarks">
+        <GCard title="Benchmarks" helpSubject="benchmarks">
             <template #help>
-                Benchmarks show the performance of taggers on the default datasets.
-                The accuracy scores are given for lemma, PoS, and both.
-                <br />
-                For more details on the datasets, see the
-                <GNav :route="{ path: '/overview/datasets' }">
-                    datasets overview
-                </GNav>
+                <p>
+                    Benchmarks show the performance of taggers on the default datasets.
+                    The accuracy scores are given for lemma, PoS, and both.
+                    <br />
+                    For more details on the datasets, see the
+                    <GNav :route="{ path: '/overview/datasets' }">
+                        datasets overview
+                    </GNav>.
+                </p>
+                <b>*</b>: when taggers use a different tagset than the reference tagset, the score can be very low.
             </template>
 
-            <GTable v-for="aspect in assays.aspects" :key="aspect.id"
-                :title="`Benchmarks for &quot;${aspect.description}&quot;`" :columns :items="items"
-                :loading="assays.loading" noHelp>
+            <GTable headless :columns :items :loading="assaysStore.loading" noHelp sortedByColumn="accuracy">
 
                 <template #table-empty-instruction>
-                    No benchmarks appeared? That is not right! Please contact the INT at
-                    <MailAddress />
+                    Select a dataset to view benchmarks.
                 </template>
 
                 <!-- tagger name -->
 
                 <template #cell-tagger="d">
                     <ExternalLink v-if="d.item.tagger !== SOURCE_LAYER"
-                        :href="`/overview/taggers#${d.item.tagger}`">
+                        :href="`/galahad/overview/taggers#${d.item.tagger}`">
                         {{ d.item.tagger }}
                     </ExternalLink>
                     <div v-else>
@@ -33,53 +33,108 @@
                 </template>
 
                 <template #cell="d">
-                    {{ d.value.count ? score(d.value, aspect) : "" }}
-                    <span v-if="showAsterisk(d.value, aspect)">*</span>
+                    {{ d.value ? d.value.toFixed(2) : "0.00" }}<span v-if="showAsterisk(d)">*</span>
+                </template>
+
+                <template #cell-details="d">
+                    <ExternalLink
+                        :href="`/galahad/annotate/evaluate?corpus=${selectedDatasetUuid}&hypothesis=${d.item.tagger}`">
+                        Details
+                    </ExternalLink>
+                </template>
+
+                <template #prepend>
+                    <div class="table-controls">
+                        <div class="table-control">
+                            Dataset:
+                            <GInput type="select" :options="datasetOptions" v-model="selectedDatasetUuid" />
+                        </div>
+                    </div>
+                    <MetricsFilter ref="metricsFilter" v-if="selectedDatasetUuid" :annotations="selectedAssay" />
                 </template>
 
             </GTable>
-
-            <GInfo style="width:fit-content; min-width:0%">
-                <b>*</b>: when taggers use a different tagset than the reference tagset, the score can be very low.
-            </GInfo>
         </GCard>
     </div>
 </template>
 
 <script setup lang='ts'>
 // Libraries & stores
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import stores, { AssaysStore } from '@/stores'
 // API & Types
-import { Assay, AssayDescription } from '@/types/assays'
+import { MetricTypeAssay } from '@/types/assays'
 import { SOURCE_LAYER } from '@/types/jobs'
+import { TableData } from '@/types/table'
 // Components
 import { MailAddress, GTable, GInfo, GCard, GNav } from '@/components'
+import MetricsFilter from '@/components/tables/MetricsFilter.vue'
+
+// Types
+type AssayRow = { tagger: string, accuracy: number, precision: number, recall: number, f1: number }
 
 // Stores
-const assays = stores.useAssays() as AssaysStore
+const assaysStore = stores.useAssays() as AssaysStore
+const corporaStore = stores.useCorpora()
 
 // Fields
-const datasetFields = computed(() => assays.datasets.map(dataset => {
-    return {
-        key: dataset,
-        label: dataset
-    }
-}))
-const columns = computed(() => [{ key: "tagger", label: "Taggers" }].concat(datasetFields.value))
+const datasetOptions = computed(() => corporaStore.datasetCorpora.map((d) => ({ value: d.uuid, text: d.name })).sort((a, b) => a.text.localeCompare(b.text)))
+const selectedDatasetUuid = ref(null)
+const selectedDatasetName = computed(() => corporaStore.datasetCorpora.find((d) => d.uuid == selectedDatasetUuid.value)?.name)
+const metricsFilter = ref(null)
+const columns = [
+    { key: "tagger", label: "tagger" },
+    { key: "precision", label: "macro\nprecision", sortOn: i => i.precision },
+    { key: "recall", label: "macro\nrecall", sortOn: i => i.recall },
+    { key: "f1", label: "macro\nf1", sortOn: i => i.f1 },
+    { key: "accuracy", label: "micro\naccuracy", sortOn: i => i.accuracy },
+    { key: "details", label: "detailed\nevaluation" },
+]
+/**
+ * Our input data is in the form:
+ * {
+ *     "dataset-1": {
+ *         "posByPos": {
+ *             "tagger-1": {
+ *                 "micro": { ... }, "macro": { ... }
+ *             },
+ *             "tagger-2": { ... },
+ *         },
+ *         "lemmaByLemma": { ... },
+ *     },
+ *     "dataset-2": { ... },
+ * }
+ * We want to transform this to:
+ * [
+ *    { tagger: "tagger-1", microAccuracy: 0, macroPrecision: 0, ... },
+ *    { ... },
+ * ]
+ * Filtered by the selected dataset and metric type.
+ */
+const selectedAssay = computed(() => {
+    return assaysStore.assays[selectedDatasetName.value]
+})
 const items = computed(() => {
-    return Object.keys(assays.assays).map(key => {
-        // deepcopy, and we are mixing string with number at this point
-        const assay = JSON.parse(JSON.stringify(assays.assays[key])) as any
-        assay.tagger = key
-        return assay
+    const metricName = metricsFilter.value?.metricName
+    return Object.entries(assaysStore.assays[selectedDatasetName.value]?.[metricName] ?? {}).map((taggerAndMetric) => {
+        const tagger: string = taggerAndMetric[0]
+        const mta: MetricTypeAssay = taggerAndMetric[1]
+        const result = {
+            tagger: tagger,
+            accuracy: mta.micro.accuracy,
+            precision: mta.macro.precision,
+            recall: mta.macro.recall,
+            f1: mta.macro.f1,
+        }
+        return result
     })
 })
 
 // Watches & mounts
 // Only needs to load once
 onMounted(() => {
-    assays.reload()
+    corporaStore.reload()
+    assaysStore.reload()
 })
 
 // Methods
@@ -93,9 +148,8 @@ function score(assay: Assay, desc: AssayDescription): string {
 /**
  * Show an asterisk for extremely low PoS scores
  */
-function showAsterisk(assay: Assay, aspect: AssayDescription): boolean {
-    return (parseFloat(score(assay, aspect)) <= 0.02)
-        && !aspect.id.includes('lemma')
+function showAsterisk(d: TableData<AssayRow>): boolean {
+    return !d.value || parseFloat(d.value) <= 0.02
 }
 </script>
 

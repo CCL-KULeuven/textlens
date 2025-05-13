@@ -6,14 +6,14 @@
 import axios, { AxiosResponse } from "axios"
 // Types & API
 import { UUID } from "@/types/corpora"
-import { Assay, AssaysType } from "@/types/assays"
+import { Assays, IndividualAssay } from "@/types/assays"
 
-const assaysPath = `/assays`
-const assayPath = (corpus: UUID, job: string) => `/corpora/${corpus}/jobs/${job}/evaluation/assay`
+const assaysPath = `/benchmarks`
+const assayPath = (corpus: UUID, job: string) => `/benchmarks/${corpus}/${job}`
 
 // Custom types
-type AssaysResponse = AxiosResponse<AssaysType>
-type AssayResponse = AxiosResponse<Assay>
+type AssaysResponse = AxiosResponse<Assays>
+type AssayResponse = AxiosResponse<IndividualAssay>
 
 // Public methods
 /**
@@ -28,6 +28,7 @@ export function getAssays(): Promise<AssaysResponse> {
  * @param uuid UUID of assay.
  * @param job tagger job name.
  */
+// Currently unused
 export function getAssay(corpus: UUID, job: string): Promise<AssayResponse> {
     return axios.get(assayPath(corpus, job))
 }

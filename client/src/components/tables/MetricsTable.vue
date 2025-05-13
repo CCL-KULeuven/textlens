@@ -1,5 +1,5 @@
 <template>
-    <GTable :title :columns :items :loading helpSubject="evaluate" class="metricsTable" :sortedByField>
+    <GTable :title :columns :items :loading helpSubject="evaluation" class="metricsTable" :sortedByColumn :noHelp>
 
         <template #help>
             <slot name="help">
@@ -25,7 +25,7 @@
             v-for="cell in ['cell-accuracy', 'cell-precision', 'cell-recall', 'cell-f1', 'cell-macroPrecision', 'cell-microPrecision', 'cell-macroRecall', 'cell-microRecall', 'cell-macroF1', 'cell-microF1', 'cell-microAccuracy']"
             #[cell]="data">
             <div :key="cell">
-                {{ `${data.value ? parseFloat(data.value).toFixed(2) : 0}` }}
+                {{ `${data.value ? parseFloat(data.value).toString().slice(0, 4) : 0}` }}
             </div>
         </template>
 
@@ -41,7 +41,8 @@
     </GTable>
 
     <ComparisonModal :show=showModal @hide="showModal = false" :samples="samples"
-        :referenceJob="jobSelection.referenceJobId" :hypothesisJob="jobSelection.hypothesisJobId" />
+        @download="$emit('download', modalData)" :referenceJob="jobSelection.referenceJobId"
+        :hypothesisJob="jobSelection.hypothesisJobId" :downloading />
 </template>
 
 <script setup lang="ts">
@@ -61,19 +62,26 @@ const props = defineProps({
     columns: { type: Array, default: [] },
     items: { type: Array, default: [] },
     loading: { type: Boolean, default: false },
-    sortedByField: { type: String, default: "count" }
+    sortedByColumn: { type: String, default: "count" },
+    downloading: { type: Boolean, default: false },
+    noHelp: { type: Boolean, default: false }
 })
+
+// Emits
+defineEmits(['download'])
 
 // Fields
 const showModal = ref(false)
 const samples = ref({ title: "", samples: [] } as { title: string, samples: TermComparison[] })
+const modalData = ref({})
 
 // Methods
 /**
  * Open a set of samples in a modal.
  */
 function openModal(data) {
-    samples.value = { title: data.field.label + ' samples', samples: data.value.samples }
+    modalData.value = data
+    samples.value = { title: `${data.field.label} ${data.item.name} samples`, samples: data.value.samples, annotationType: data.item.column.toLowerCase() }
     showModal.value = true
 }
 </script>

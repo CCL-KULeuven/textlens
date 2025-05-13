@@ -1,5 +1,6 @@
 package org.ivdnt.galahad.port.tsv.export
 
+import org.ivdnt.galahad.data.layer.AnnotationType
 import org.ivdnt.galahad.data.layer.Layer
 import org.ivdnt.galahad.port.DocumentTransformMetadata
 import org.ivdnt.galahad.port.LayerMerger
@@ -18,6 +19,7 @@ internal open class TSVLayerMerger(
     val layer = transformMetadata.layer
     val outFile: File = createTempDirectory("teimerge").toFile().resolve(transformMetadata.document.name)
     protected open val hasHeader: Boolean = true
+
     /**
      * Merge uploaded raw file with tagger layer. Headers indices are already determined by TSVFile.
      * Read in per line, split on tabs, swap out pos & lemma and commit to new file
@@ -37,7 +39,7 @@ internal open class TSVLayerMerger(
                 termIndex++
             } else {
                 val columns = line.split("\t").toMutableList()
-                if (columns.size >= 3) {
+                if (columns.size >= 2) {
                     // Swap out pos & lemma, keep the rest.
                     replaceColumns(columns, layer, termIndex)
                     outFile.appendText(columns.joinToString("\t") + "\n")
@@ -51,13 +53,27 @@ internal open class TSVLayerMerger(
     }
 
     /*
-     * Replace the PoS and lemma values in their previously indexed columns.
+     * Replace annotations in their previously indexed columns.
      */
     protected open fun replaceColumns(
-        columns: MutableList<String>, layer: Layer,
+        columns: MutableList<String>,
+        layer: Layer,
         termIndex: Int,
     ) {
-        columns[sourceFile.posIndex!!] = layer.terms[termIndex].posOrEmpty
-        columns[sourceFile.lemmaIndex!!] = layer.terms[termIndex].lemmaOrEmpty
+        tagger.annotationTypes.forEach { annotationType ->
+            val index = sourceFile.columnIndices[annotationType] ?: return@forEach // Skip if not in the file.
+            mergeSingleColumn(columns, layer, termIndex, annotationType, index)
+        }
+    }
+
+    protected open fun mergeSingleColumn(
+        columns: MutableList<String>,
+        layer: Layer,
+        termIndex: Int,
+        annotationType: AnnotationType,
+        columnIndex: Int
+    ) {
+        val term = layer.terms[termIndex]
+        columns[columnIndex] = term.annotations[annotationType] ?: ""
     }
 }

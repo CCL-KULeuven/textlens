@@ -5,9 +5,14 @@ eraFrom: "0"
 eraTo: "2024"
 language: "English"
 produces:
-  - TOK
-  - LEM
-  - POS
+  - lemma
+  - pos
+  - upos
+  - head
+  - deprel
+  - misc
+  - id
+  - named-entity
 model:
   name: en_core_web_lg
   href: https://github.com/explosion/spacy-models/releases/tag/en_core_web_lg-3.8.0

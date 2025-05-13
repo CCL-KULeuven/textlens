@@ -35,6 +35,48 @@ internal class TEIExportTest {
             .ignoreTrailingWhiteSpaces()
             .ignoreDate()
             .ignoreUUID()
+            .ignoreWhiteSpaceDocumentWide()
+            .result()
+    }
+
+    @Test
+    fun `Merge doc with alphanumeric PC`() {
+        fun asserAlphaNumericPC(folder: String) {
+            val file = TEIFile(Resource.get("$folder/input.tei.xml"))
+            assertPlainText(folder, file)
+
+            val plaintext: String = Resource.get("$folder/plaintext.txt").readText()
+            val tagset = TagsetStore().getOrNull("TDN-Core")!!
+            val layer = LayerBuilder()
+                .loadLayerFromTSV("$folder/pie-tdn.tsv", plaintext)
+                .setTagset(tagset)
+                .build()
+
+            DocTest.builder(corpus)
+                .expectingFile("$folder/merged-output.xml")
+                .mergeTEI(Resource.get("$folder/input.tei.xml"), layer)
+                .ignoreDate()
+                .ignoreUUID()
+                .result()
+        }
+        asserAlphaNumericPC("tei/alphanumericpc/with-w-tags")
+        asserAlphaNumericPC("tei/alphanumericpc/without-w-tags")
+    }
+
+    @Test
+    fun `Convert doc with alphanumeric PC`() {
+        val folder = "tei/alphanumericpc/with-w-tags"
+        val plaintext: String = Resource.get("$folder/plaintext.txt").readText()
+        val tagset = TagsetStore().getOrNull("TDN-Core")!!
+        val layer = LayerBuilder()
+            .loadLayerFromTSV("$folder/pie-tdn.tsv", plaintext)
+            .setTagset(tagset)
+            .build()
+        DocTest.builder(corpus)
+            .expectingFile("$folder/converted-output.xml")
+            .convertToTEI(Resource.get("$folder/input.tei.xml"), layer)
+            .ignoreDate()
+            .ignoreUUID()
             .result()
     }
 
@@ -52,6 +94,7 @@ internal class TEIExportTest {
             .mergeTEI(Resource.get("tei/brieven/input.tei.xml"), layer)
             .ignoreDate()
             .ignoreUUID()
+            .ignoreWhiteSpaceDocumentWide()
             .result()
     }
 
@@ -68,9 +111,9 @@ internal class TEIExportTest {
         val tagset = TagsetStore().getOrNull("TDN-Core")!!
 
         val layer = LayerBuilder()
-            .loadLayerFromTSV( "tei/export/mock-TDN-with-punctuation.tsv", teiFile.plainTextReader().readText() )
-            .assertWordFromsAndTermsSize( 5, 5 )
-            .setTagset( tagset )
+            .loadLayerFromTSV("tei/export/mock-TDN-with-punctuation.tsv", teiFile.plainTextReader().readText())
+            .assertWordFromsAndTermsSize(5, 5)
+            .setTagset(tagset)
             .build()
 
         DocTest.builder(corpus)
@@ -141,10 +184,11 @@ internal class TEIExportTest {
 
         // build a layer that is a valid annotation of the temp file
         val layer = LayerBuilder()
-            .loadDummies( testsize * 1000 )
-            .setTagset( tagset )
+            .loadDummies(testsize * 1000)
+            .setTagset(tagset)
             .build()
-        corpus.jobs.readOrCreateOrNull(jobName)?.document(docName)?.setResult(layer) ?: throw Exception("Could not set layer result")
+        corpus.jobs.readOrCreateOrNull(jobName)?.documentOrEmpty(docName)?.setResult(layer)
+            ?: throw Exception("Could not set layer result")
 
         println("Created layer. Layer size: ${layer.wordForms.size} wordforms")
 
@@ -154,20 +198,21 @@ internal class TEIExportTest {
         // remember the output to reuse as TEI-file in the merge test
         val teiConvertedFile = executeAndLogTime("convert large TEI file") {
             corpus.documents.readOrThrow(docName).generateAs(
-                DocumentFormat.TeiP5, DocumentTransformMetadata(
+                DocumentTransformMetadata(
                     corpus = corpus,
                     job = corpus.jobs.readOrThrow(jobName),
                     document = corpus.documents.readOrThrow(docName),
                     user = User("test-user"),
                     targetFormat = DocumentFormat.TeiP5
                 )
-        ) }
+            )
+        }
 
         displayMemory()
         println("Created teiFile. teiFile size: ${teiConvertedFile.length()} bytes")
 
         val teiUploadedFileName = corpus.documents.create(teiConvertedFile)
-        corpus.jobs.readOrCreateOrNull(jobName)?.document(teiUploadedFileName)?.setResult(layer)
+        corpus.jobs.readOrCreateOrNull(jobName)?.documentOrEmpty(teiUploadedFileName)?.setResult(layer)
             ?: throw Exception("Could not set layer result")
 
         // merge the layer with the TEI-file

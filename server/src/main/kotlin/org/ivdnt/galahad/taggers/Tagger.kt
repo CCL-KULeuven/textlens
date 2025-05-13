@@ -3,6 +3,7 @@ package org.ivdnt.galahad.taggers
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.ivdnt.galahad.app.JSONable
+import org.ivdnt.galahad.data.layer.AnnotationType
 
 class Tagger (
     // The id should be equal to the filename
@@ -27,6 +28,9 @@ class Tagger (
     var version: String = ""
     @JsonIgnore
     var devport: Int? = 0
+    @get:JsonIgnore
+    val annotationTypes: List<AnnotationType>
+        get() = produces.map { AnnotationType.fromString(it) }
 
     class LinkItem (
         @JsonProperty("name") var name: String = "",

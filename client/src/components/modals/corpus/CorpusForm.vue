@@ -13,7 +13,7 @@
                     </td>
                     <td>
                         <GInput v-model="name" refName="corpusName" placeholder="corpus name"
-                            :validator="validateCorpusName" validityDescriptor="3-100 characters" @enter="doAction" />
+                            :validator="validateCorpusName" validityDescriptor="3-100 characters" />
                     </td>
                 </tr>
 
@@ -187,7 +187,7 @@ export default defineComponent({
     },
     methods: {
         doAction() {
-            if (!this.validateCorpusName(this.name)) return
+            if (!this.validateCorpusName(this.name) || !this.validateCorpusLang(this.language)) return
             const value: MutableCorpusMetadata = {
                 owner: "", // this is set by the server for security reasons
                 name: this.name,
@@ -225,7 +225,7 @@ export default defineComponent({
         validateCorpusName(name: string) {
             return name.toString().match(RegExp("^.{3,100}$"))
         },
-        validateCorpusLang(lang: object) {
+        validateCorpusLang(lang: object | null) {
             return lang
         },
         validateSourceURL(url: string): string {

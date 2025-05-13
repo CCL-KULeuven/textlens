@@ -2,7 +2,10 @@ package org.ivdnt.galahad.port.tsv
 
 import org.ivdnt.galahad.data.document.DocumentFormat
 import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.data.layer.AnnotationType
+import org.ivdnt.galahad.data.layer.Annotations
 import org.ivdnt.galahad.data.layer.Layer
+import org.ivdnt.galahad.data.layer.token
 import org.ivdnt.galahad.port.DocumentTransformMetadata
 import org.ivdnt.galahad.port.InternalFile
 import org.ivdnt.galahad.port.PlainTextableFile
@@ -19,12 +22,22 @@ open class TSVFile(
 
     private val plainTextFile = File.createTempFile("galahad-${file.name}-plaintext", ".txt")
     override val format: DocumentFormat = DocumentFormat.Tsv
-    val entries = ArrayList<TSVEntry>()
+    val entries = ArrayList<Annotations>()
     private var sourceLayer: Layer = Layer.EMPTY
-    open var lemmaIndex: Int? = null
-    open var posIndex: Int? = null
-    open var literalIndex: Int? = null
     private var isParsed: Boolean = false
+
+    open val columnIndices: MutableMap<AnnotationType, Int> = mutableMapOf()
+
+    val columnNames: Map<AnnotationType, List<String>> = mapOf(
+        AnnotationType.TOKEN to listOf("word", "token", "literal", "term", "form"),
+        AnnotationType.LEMMA to listOf("lemma"),
+        AnnotationType.POS to listOf("pos", "xpos"),
+        AnnotationType.UPOS to listOf("upos"),
+        AnnotationType.DEPREL to listOf("deprel"),
+        AnnotationType.HEAD to listOf("head"),
+        AnnotationType.ID to listOf("id"),
+        AnnotationType.NER to listOf("entity", "ner", "named-entity", "NamedEntity"),
+    )
 
     override fun plainTextReader(): Reader {
         if (!isParsed) parse()
@@ -64,53 +77,32 @@ open class TSVFile(
      */
     private fun parseHeader(line: String) {
         val headers = line.split("\t")
-        val errors: MutableList<String> = mutableListOf()
 
-        getColumnIndices(headers, errors)
+        getColumnIndices(headers)
 
-        if (errors.isNotEmpty()) {
-            // Combine the errors for some pretty printing.
-            val missingColumns = errors.joinToString(" and ", transform = { error -> "a $error column" })
-            throw Exception("Could not find $missingColumns in the TSV header.")
+        // Check for the presence of a token
+        if (columnIndices[AnnotationType.TOKEN] == null) {
+            throw IllegalArgumentException("No token column found in TSV file.")
         }
     }
 
     // Derived classes may want to look for other names or indices.
+    /**
+     * Set up columnIndices to reflect the header.
+     * For each header column, check if it is the name of any of the AnnotationTypes.
+     */
     protected open fun getColumnIndices(
         headers: List<String>,
-        errors: MutableList<String>,
     ) {
-        literalIndex = indexOfHeaderNamedAnyOf(headers, listOf("word", "token", "literal", "term", "form"), errors)
-        lemmaIndex = indexOfHeaderNamedAnyOf(headers, listOf("lemma"), errors)
-        posIndex = indexOfHeaderNamedAnyOf(headers, listOf("pos", "upos", "xpos"), errors)
-    }
-
-    /**
-     * Get index of the tsvHeader with one of a list of possible name. Priority given to the first match.
-     *
-     * @param tsvHeaders Available headers in the TSV file.
-     * @param searchNames Possible names to search for in order of priority.
-     * @param errors A list to put the names of columns in that were not found. The first name is reported in case of an error.
-     * @return Index of the named header.
-     */
-    private fun indexOfHeaderNamedAnyOf(
-        tsvHeaders: List<String>, searchNames: List<String>, errors: MutableList<String>,
-    ): Int? {
-        // asSequence prioritizes the first matching searchName.
-        val tsvHeader: String? = searchNames.asSequence().map { searchName ->
-            tsvHeaders.firstOrNull {
-                it.contains(
-                    searchName, ignoreCase = true
-                )
+        headers.forEachIndexed { index, header ->
+            columnNames.entries
+            // from the columnNames, find the first AnnotationType that has a name that matches the header.
+            .firstOrNull { (_, names) ->
+                names.any { name -> header.equals(name, ignoreCase = true) }
+            // if it exists, register the index
+            }?.let { (annotationType, _) ->
+                columnIndices[annotationType] = index
             }
-        }.firstOrNull { it != null }
-
-        return if (tsvHeader == null) {
-            // No results were found
-            errors.add(searchNames.first())
-            null
-        } else {
-            tsvHeaders.indexOf(tsvHeader)
         }
     }
 
@@ -119,19 +111,18 @@ open class TSVFile(
         val values: List<String> = line.split("\t")
 
         // Retrieve values
-        val literal: String? = getColumn(literalIndex!!, values)
-        val lemma: String? = getColumn(lemmaIndex!!, values)
-        val pos: String? = getPos(values)
+        val mutAnnot: MutableMap<AnnotationType, String?> = mutableMapOf()
+        for (column in columnIndices.entries) {
+            getColumn(column.value, values)?.let { mutAnnot[column.key] = it }
+        }
 
         // Skip newlines by checking for non-empty literals.
-        if (!literal.isNullOrEmpty() && values.size >= 3) {
+        if (mutAnnot[AnnotationType.TOKEN] != null && values.size >= 2) {
+            val annotations: Annotations = mutAnnot
             // Commit values if non-empty
-            val tsvEntry = TSVEntry(
-                literal = literal, lemma = lemma, pos = pos
-            )
-            entries.add(tsvEntry)
+            entries.add(annotations)
             // Write to plaintext
-            stream.write("$literal ".toByteArray()) // Note space between words.
+            stream.write("${annotations.token} ".toByteArray()) // Note space between words.
         } else {
             stream.write("\n".toByteArray())
         }
@@ -150,7 +141,7 @@ open class TSVFile(
     }
 
     // Derived classes may have to construct a PoS differently.
-    protected open fun getPos(values: List<String>): String? = getColumn(posIndex!!, values)
+    //protected open fun getPos(values: List<String>): String? = getColumn(posIndex!!, values)
 
     /**
      * Assumes the TSV file is mappable onto the provided plaintext
@@ -166,7 +157,7 @@ open class TSVFile(
         for (i in 0..plaintext.length) {
             if (i >= lastPlainOffset) {
                 if (index < entries.size) {
-                    val literal = entries[index].literal
+                    val literal = entries[index].token
                     if (i + literal.length <= plaintext.length) {
                         val candidate = plaintext.substring(i until i + literal.length)
                         if (literal == candidate) {

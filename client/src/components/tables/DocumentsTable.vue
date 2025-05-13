@@ -1,8 +1,8 @@
 <template>
     <div>
 
-        <GTable helpSubject="documents" :columns :items="documentsStore.available" :loading="documentsStore.loading"
-            :displayOnEmpty="false" sortedByField="name" :sortDesc="false" hoverRow>
+        <GTable :columns :items="documentsStore.available" :loading="documentsStore.loading" :displayOnEmpty="false"
+            sortedByColumn="name" :sortDesc="false" hoverRow>
             <template #title>
                 <span v-if="!corpus || (type == TableDocumentsType.Dataset && !corpus.dataset)">
                     No documents
@@ -29,12 +29,8 @@
             </template>
 
             <template #header>
-                <UploadDocuments v-if="userStore.hasWriteAccess && type != TableDocumentsType.Dataset" />
-            </template>
-
-            <!-- valid cell -->
-            <template #cell-valid="data">
-                {{ data.value ? '👍' : '🔥' }}
+                <UploadDocuments v-if="userStore.hasWriteAccess && type != TableDocumentsType.Dataset"
+                    style="margin-bottom:1em" />
             </template>
 
             <!-- name cell -->
@@ -49,16 +45,13 @@
             </template>
 
             <template #head-layerSummary>
-                source annotations<br>
-                (token / PoS / lemma)
+                tokens
             </template>
             <!-- layerSummary cell -->
             <template #cell-layerSummary="data">
                 <RightFloatCell>
                     <template #left>
-                        {{ data.value.numWordForms }} /
-                        {{ data.value.numPOS }} /
-                        {{ data.value.numLemma }}
+                        {{ data.value.numWordForms }}
                     </template>
                     <template #right>
                         <InspectButton v-if="data.value.numWordForms > 0" @click="previewDocument = data.item" />

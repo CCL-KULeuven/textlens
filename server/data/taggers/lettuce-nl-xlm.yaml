@@ -5,17 +5,17 @@ eraFrom: "0"
 eraTo: "2024"
 language: "Dutch"
 produces:
-  - TOK
-  - POS
+  - pos
+  - id
 model:
   name: lettuce_nl_mono
-  href: https://github.com/explosion/spacy-models/releases/tag/de_core_news_sm-3.7.0
+  href: https://huggingface.co/collections/pranaydeeps/lettuce-pos-taggers-6638e94c11063400f5796feb
 software:
   name: lettuce
   href: https://huggingface.co/collections/pranaydeeps/lettuce-pos-taggers-6638e94c11063400f5796feb
 dataset:
-  name: Tiger Corpus, WikiNER
-  href: https://github.com/explosion/spacy-models/releases/tag/de_core_news_sm-3.7.0
+  name: todo
+  href: https://huggingface.co/collections/pranaydeeps/lettuce-pos-taggers-6638e94c11063400f5796feb
 trainedBy: "lettuce"
 date: "2024-05-30"
-devport: 8131
+devport: 8141

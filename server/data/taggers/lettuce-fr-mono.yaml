@@ -1,0 +1,21 @@
+id: lettuce-fr-mono
+description: "lettuce_fr_mono"
+tagset: TreeTagger
+eraFrom: "0"
+eraTo: "2024"
+language: "French"
+produces:
+  - pos
+  - id
+model:
+  name: lettuce_fr_mono
+  href: todo
+software:
+  name: lettuce
+  href: todo
+dataset:
+  name: todo
+  href: todo
+trainedBy: "lettuce"
+date: "2024-05-30"
+devport: 8144

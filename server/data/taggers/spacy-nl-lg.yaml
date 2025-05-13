@@ -5,18 +5,24 @@ eraFrom: "0"
 eraTo: "2024"
 language: "Dutch"
 produces:
-  - TOK
-  - LEM
-  - POS
+  - lemma
+  - pos
+  - upos
+  - head
+  - deprel
+  - misc
+  - id
+  - named-entity
 model:
   name: nl_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
 software:
-  name: spaCy
+  name: spacy
   href: https://spacy.io/models/nl
 dataset:
-  name: Lassy Small, Alpino
+  name: nl_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
-trainedBy: "spaCy"
-date: "2024-11-06"
+trainedBy: "spacy"
+date: "2024-11-12"
 devport: 8120
+version: "3.8.2"

@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import java.io.File
 import java.net.URL
 import java.util.*
+import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 object Resource {
@@ -62,7 +63,6 @@ fun createCorpus(workdir: File? = null, isDataset: Boolean = false, isAdmin: Boo
             "",
             "tagset",
             isDataset,
-            isDataset,
             setOf("collaborator1", "collaborator2"),
             setOf(),
             "source name",
@@ -94,7 +94,7 @@ fun assertPlaintextAndSourcelayer(folder: String, file: InternalFile) {
 
 class LayerBuilder {
 
-    var layer: Layer = Layer(name = "placeholder")
+    var layer: Layer = Layer(name = "sourceLayer")
 
     fun assertWordFromsAndTermsSize(wfs: Int, terms: Int): LayerBuilder {
         assertEquals(wfs, n(layer, "layer").wordForms.size)
@@ -106,7 +106,6 @@ class LayerBuilder {
         amount: Int, literal: String = "dummy", lemma: String? = "dummy", pos: String? = "pos",
     ): LayerBuilder {
         val baseOffset = layer.terms.lastOrNull()?.targets?.lastOrNull()?.endOffset ?: 0
-        if (layer.name != "dummyLayer") layer = Layer(name = "dummyLayer")
 
         for (i in 0 until amount) {
             val wf = WordForm(
@@ -126,7 +125,7 @@ class LayerBuilder {
 
     fun loadLayerFromTSV(path: String, plaintext: String): LayerBuilder {
         val tsv = TSVFile(Resource.get(path))
-        layer = tsv.mapOnPlainText(plaintext, "path")
+        layer = tsv.mapOnPlainText(plaintext, File(path).nameWithoutExtension)
         return this
     }
 
@@ -198,7 +197,7 @@ class DocTestBuilder(
         file.createNewFile()
         val docName = corpus.documents.create(file)
         val job = corpus.jobs.createOrThrow(TestConfig.TAGGER_NAME)
-        job.document(docName).setResult(layer)
+        job.documentOrEmpty(docName).setResult(layer)
         return DocumentTransformMetadata(
             corpus, job, corpus.documents.readOrThrow(docName), User("testUser"), format
         )
@@ -275,7 +274,7 @@ class DocTestBuilder(
     fun convertToTEI(file: File, layer: Layer): TestResult {
         val docName = corpus.documents.create(file)
         val job = corpus.jobs.createOrThrow(TestConfig.TAGGER_NAME)
-        job.document(docName).setResult(layer)
+        job.documentOrEmpty(docName).setResult(layer)
         val exporter = LayerToTEIConverter(
             getDummyTransformMetadata(layer, DocumentFormat.TeiP5, file)
         )
