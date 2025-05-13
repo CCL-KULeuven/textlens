@@ -1,8 +1,8 @@
 {
     "@context": "https://w3id.org/codemeta/3.0",
     "@type": "SoftwareSourceCode",
-    "dateCreated": "2024-05-31",
-    "datePublished": "2024-05-31",
+    "dateCreated": "2025-05-13",
+    "datePublished": "2025-05-13",
     "applicationCategory": [
         "https://w3id.org/nwo-research-fields#Linguistics",
         "https://w3id.org/nwo-research-fields#ComputationalLinguisticsAndPhilology",
@@ -29,6 +29,13 @@
             "givenName": "Vincent"
         },
         {
+            "id": "http://orcid.org/0000-0001-9563-9672",
+            "type": "Person",
+            "email": "jonas@ccl.kuleuven.be",
+            "familyName": "Doumen",
+            "givenName": "Jonas"
+        },
+        {
             "@type": "Person",
             "familyName": "Brouwer",
             "givenName": "Tim"
@@ -40,23 +47,30 @@
             "@type": "Person",
             "familyName": "Brouwer",
             "givenName": "Tim"
+        },
+        {
+            "id": "http://orcid.org/0000-0001-9563-9672",
+            "type": "Person",
+            "email": "jonas@ccl.kuleuven.be",
+            "familyName": "Doumen",
+            "givenName": "Jonas"
         }
     ],
-    "maintainer": "http://orcid.org/0009-0006-9941-9582",
-    "codeRepository": "git+https://github.com/INL/galahad.git",
-    "description": "GaLAHaD (Generating Linguistic Annotations for Historical Dutch) allows linguists to compare taggers, tag their own corpora, evaluate the results and export their tagged documents.",
-    "downloadUrl": "https://github.com/INL/galahad",
+    "maintainer": "http://orcid.org/0000-0001-9563-9672",
+    "codeRepository": "git+https://github.com/CCL-KULeuven/textlens.git",
+    "description": "Textlens is an application that enables digital humanties researchers to perform linguistic analysis such as tokenisation, lemmatization and part-of-speech (PoS) tagging using state-of-the art NLP tools through a user-friendly, browser-based interface, without requiring any software installation or configuration.",
+    "downloadUrl": "https://github.com/CCL-KULeuven/textlens",
     "license": "http://spdx.org/licenses/Apache-2.0",
-    "name": "GaLAHaD",
-    "identifier": "galahad",
+    "name": "textlens",
+    "identifier": "textlens",
     "funding": [
         {
             "@type": "Grant",
-            "name": "CLARIAH-PLUS (NWO grant 184.034.023)",
+            "name": "CLARIAH-VL (FWO grant: I000921N)",
             "funder": {
                 "@type": "Organization",
-                "name": "NWO",
-                "url": "https://www.nwo.nl"
+                "name": "FWO",
+                "url": "https://www.fwo.be"
             }
         }
     ],
@@ -71,36 +85,36 @@
         "Node"
     ],
     "codemeta:contIntegration": {
-        "id": "https://github.com/INL/galahad/actions"
+        "id": "https://github.com/CCL-KULeuven/textlens/actions"
     },
-    "continuousIntegration": "https://github.com/INL/galahad/actions",
+    "continuousIntegration": "https://github.com/CCL-KULeuven/textlens/actions",
     "developmentStatus": [
         "https://www.repostatus.org/#active",
         "https://w3id.org/research-technology-readiness-levels#Level6LatePrototype"
     ],
     "producer": {
         "@type": "Organization",
-        "name": "Instituut voor de Nederlandse taal",
-        "@id": "https://www.ivdnt.org",
-        "url": "https://www.ivdnt.org"
+        "name": "Centre for Computational Linguistics, KU Leuven",
+        "@id": "https://www.arts.kuleuven.be/ling/ccl",
+        "url": "https://www.arts.kuleuven.be/ling/ccl"
     },
-    "issueTracker": "https://github.com/INL/galahad/issues",
-    "readme": "https://github.com/INL/Galahad/blob/release/readme.md",
-    "releaseNotes": "https://github.com/INL/Galahad/releases",
+    "issueTracker": "https://github.com/CCL-KULeuven/textlens/issues",
+    "readme": "https://github.com/CCL-KULeuven/textlens/blob/release/readme.md",
+    "releaseNotes": "https://github.com/CCL-KULeuven/textlens/releases",
     "softwareHelp": [
         {
-            "@id": "https://portal.clarin.ivdnt.org/galahad/help",
+            "@id": "https://portal.clarin.ivdnt.org/textlens/help",
             "@type": "WebSite",
             "name": "GaLAHaD Help",
-            "url": "https://portal.clarin.ivdnt.org/galahad/help"
+            "url": "https://portal.clarin.ivdnt.org/textlens/help"
         }
     ],
     "targetProduct": [
         {
             "@type": "WebApplication",
-            "name": "GaLAHaD",
+            "name": "textlens",
             "provider": "https://www.ivdnt.org",
-            "url": "https://portal.clarin.ivdnt.org/galahad"
+            "url": "https://portal.clarin.ivdnt.org/textlens"
         },
         {
             "@type": "WebAPI",
@@ -108,15 +122,15 @@
             "provider": "https://www.ivdnt.org",
             "endpointUrl": {
                 "@type": "EntryPoint",
-                "url": "https://portal.clarin.ivdnt.org/galahad/api",
+                "url": "https://portal.clarin.ivdnt.org/textlens/api",
                 "contentType": "application/json"
             },
             "endpointDescription": {
                 "@type": "CreativeWork",
                 "encodingFormat": "application/json",
-                "url": "https://portal.clarin.ivdnt.org/galahad/api/v3/api-docs"
+                "url": "https://portal.clarin.ivdnt.org/textlens/api/v3/api-docs"
             },
-            "documentation": "https://portal.clarin.ivdnt.org/galahad/api/swagger-ui/index.html",
+            "documentation": "https://portal.clarin.ivdnt.org/textlens/api/swagger-ui/index.html",
             "consumesData": [
                 {
                     "@type": "TextDigitalDocument",
