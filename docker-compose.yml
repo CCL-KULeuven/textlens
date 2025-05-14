@@ -4,7 +4,7 @@
 version: '1'
 services:
     client:
-        image: instituutnederlandsetaal/textlens-client:${APP_VERSION}
+        image: cclkuleuven/textlens-client:${APP_VERSION}
         build:
             context: client
         restart: unless-stopped
@@ -19,7 +19,7 @@ services:
                     cpus: '0.25'
                     memory: 128M
     server:
-        image: instituutnederlandsetaal/textlens-server:${APP_VERSION}
+        image: cclkuleuven/textlens-server:${APP_VERSION}
         build:
             context: server
         restart: unless-stopped
@@ -45,7 +45,7 @@ services:
             - "JAVA_OPTS=-XX:+ExitOnOutOfMemoryError"
     # Simple nginx reverse proxy to combine front- and backend
     proxy:
-        image: instituutnederlandsetaal/textlens-proxy:${APP_VERSION}
+        image: cclkuleuven/textlens-proxy:${APP_VERSION}
         build:
             context: proxy
         depends_on:
