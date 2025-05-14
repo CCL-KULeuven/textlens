@@ -38,6 +38,6 @@ jobs:
 
       - name: Push 
         run: |
-            docker push instituutnederlandsetaal/galahad-proxy:dev
-            docker push instituutnederlandsetaal/galahad-server:dev
-            docker push instituutnederlandsetaal/galahad-client:dev
+            docker push cclkuleuven/textlens-proxy:dev
+            docker push cclkuleuven/textlens-server:dev
+            docker push cclkuleuven/textlens-client:dev
