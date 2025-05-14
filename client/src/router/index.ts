@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import HomeView from '@/views/HomeView.vue'
-
 import AnnotateView from '@/views/annotate/AnnotateView.vue'
 
 import CorporaView from '@/views/annotate/subviews/CorporaView.vue'
@@ -47,10 +45,6 @@ const routes = [
     //component: AnnotateView,
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: HomeView
-  }, {
     path: '/annotate',
     name: 'Annotate',
     redirect: '/annotate/corpora',
