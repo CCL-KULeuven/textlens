@@ -1,7 +1,7 @@
 <template>
     <GTabs class="level-2" basePath="/application" :tabs="[
         { id: 'about', title: 'About' },
-        //{ id: 'api', title: 'API', stub: true },
+        { id: 'version', title: 'Version' },
     ]">
 
         <template #api-title>

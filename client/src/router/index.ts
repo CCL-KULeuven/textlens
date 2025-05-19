@@ -18,6 +18,7 @@ import ExportView from '@/views/annotate/subviews/ExportView.vue'
 
 import ApplicationView from '@/views/application/ApplicationView.vue'
 import AboutView from '@/views/application/subviews/AboutView.vue'
+import VersionView from '@/views/application/subviews/VersionView.vue'
 
 import OverviewView from '@/views/overview/OverviewView.vue'
 import TaggersView from '@/views/overview/subviews/TaggersView.vue'
@@ -108,6 +109,7 @@ const routes = [
     component: ApplicationView,
     children: [
       { path: 'about', component: AboutView },
+      { path: 'version', component: VersionView },
     ]
   }, {
     path: '/overview',
