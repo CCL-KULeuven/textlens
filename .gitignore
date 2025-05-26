@@ -301,3 +301,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 scripts/tag-matching/*/*
+server/local.properties
