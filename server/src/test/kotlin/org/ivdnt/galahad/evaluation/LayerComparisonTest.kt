@@ -1,8 +1,8 @@
 package org.ivdnt.galahad.evaluation
 
-import org.ivdnt.galahad.data.layer.AnnotationType
+import org.ivdnt.galahad.annotations.Annotation
 import org.ivdnt.galahad.evaluation.comparison.*
-import org.ivdnt.galahad.port.LayerBuilder
+import org.ivdnt.galahad.util.LayerBuilder
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -29,7 +29,7 @@ class LayerComparisonTest {
         }
 
         fun NouNouFilter(): LayerFilter {
-            val termFilter = HeadGroupTermFilter(AnnotationType.POS, "NOU")
+            val termFilter = HeadGroupTermFilter(Annotation.POS, "NOU")
             return ConfusionLayerFilter(termFilter, termFilter)
         }
 
@@ -96,9 +96,9 @@ class LayerComparisonTest {
             }
             // To layer
             val hypo = hypoBuilder.build()
-            assertEquals(words.size + numPunct, hypo.terms.size)
+            assertEquals(words.size + numPunct, hypo.terms.count())
             val ref = refBuilder.build()
-            assertEquals(words.size, ref.terms.size)
+            assertEquals(words.size, ref.terms.count())
             // Compare
             val comparison = LayerComparison(hypothesisLayer = hypo, referenceLayer = ref)
             assertEquals(numMatches, comparison.matches.size)

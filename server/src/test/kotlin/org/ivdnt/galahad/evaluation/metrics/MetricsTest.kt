@@ -1,10 +1,5 @@
 package org.ivdnt.galahad.evaluation.metrics
 
-import org.ivdnt.galahad.evaluation.EvaluationEntry
-import org.ivdnt.galahad.port.Resource
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
-
 class MetricsTest {
     // @Test
     // fun `Global test`() {
@@ -44,7 +39,7 @@ class MetricsTest {
     //
     // @Test
     // fun `To CSV`() {
-    //     assertEquals(Resource.get("evaluation/metrics/output.csv").readText(), dummyMetrics().toGlobalCsv())
+    //     assertEquals(TestUtil.get("evaluation/metrics/output.csv").readText(), dummyMetrics().toGlobalCsv())
     // }
     //
     // private fun dummyMetrics(): Metrics {

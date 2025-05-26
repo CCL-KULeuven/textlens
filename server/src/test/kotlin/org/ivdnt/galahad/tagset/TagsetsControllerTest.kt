@@ -1,6 +1,6 @@
 package org.ivdnt.galahad.tagset
 
-import org.ivdnt.galahad.app.GalahadApplication
+import org.ivdnt.galahad.app.Galahad
 import org.ivdnt.galahad.web.controller.TagsetsController
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -10,7 +10,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class])
+@ContextConfiguration(classes = [Galahad::class])
 class TagsetsControllerTest(
     @Autowired val mvc: MockMvc,
     @Autowired val ctrl: TagsetsController,
@@ -20,7 +20,7 @@ class TagsetsControllerTest(
     fun `Get valid tagset`() {
         val tagset = ctrl.getTagset("TDN-Core")
         assertNotNull(tagset)
-        assertTrue(tagset.punctuationTags.contains("PC"))
+        assertTrue("PC" in tagset.punctuationTags)
     }
 
     @Test

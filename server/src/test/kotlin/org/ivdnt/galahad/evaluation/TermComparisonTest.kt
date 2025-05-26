@@ -1,8 +1,7 @@
 package org.ivdnt.galahad.evaluation
 
-import org.ivdnt.galahad.data.layer.AnnotationType
-import org.ivdnt.galahad.data.layer.Term
-import org.ivdnt.galahad.data.layer.WordForm
+import org.ivdnt.galahad.annotations.Annotation
+import org.ivdnt.galahad.annotations.Term
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -15,25 +14,19 @@ class TermComparisonTest {
     inner class OverlapTest {
         @Test
         fun `Full overlap`() {
-            val target1 = WordForm("word", 0, 4, "")
-            val target2 = WordForm("word", 0, 4, "")
-            val term1 = Term("", "", mutableListOf(target1))
-            val term2 = Term("", "", mutableListOf(target2))
+            val term1 = Term("", 0, mapOf(Annotation.TOKEN to "word"))
+            val term2 = Term("", 0, mapOf(Annotation.TOKEN to "word"))
             TermComparison(term1, term2).apply {
-                assertTrue(fullOverlap)
-                assertFalse(partialOverlap)
+                assertTrue(overlap)
             }
         }
 
         @Test
         fun `Partial overlap`() {
-            val target1 = WordForm("word", 0, 4, "")
-            val target2 = WordForm("word", 2, 6, "")
-            val term1 = Term("", "", mutableListOf(target1))
-            val term2 = Term("", "", mutableListOf(target2))
+            val term1 = Term("", 0, mapOf(Annotation.TOKEN to "word"))
+            val term2 = Term("", 2, mapOf(Annotation.TOKEN to "word"))
             TermComparison(term1, term2).apply {
-                assertFalse(fullOverlap)
-                assertTrue(partialOverlap)
+                assertFalse(overlap)
             }
         }
     }
@@ -46,11 +39,11 @@ class TermComparisonTest {
             hypoLemma: String? = "school", refLemma: String? = "school",
             hypoPos: String? = "NOU", refPos: String? = "NOU",
         ) {
-            val hypoTerm = Term(hypoLemma, hypoPos, mutableListOf())
-            val refTerm = Term(refLemma, refPos, mutableListOf())
+            val hypoTerm = Term("", 0, mapOf(Annotation.LEMMA to hypoLemma, Annotation.POS to hypoPos))
+            val refTerm = Term("", 0, mapOf(Annotation.LEMMA to refLemma, Annotation.POS to refPos))
             TermComparison(hypoTerm, refTerm).apply {
-                assertEquals(lemmaEqual, equalAnnotation(AnnotationType.LEMMA))
-                assertEquals(posEqual, equalAnnotation(AnnotationType.POS))
+                assertEquals(lemmaEqual, equalAnnotation(Annotation.LEMMA))
+                assertEquals(posEqual, equalAnnotation(Annotation.POS))
             }
         }
 

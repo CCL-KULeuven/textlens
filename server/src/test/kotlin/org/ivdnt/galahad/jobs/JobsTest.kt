@@ -1,9 +1,10 @@
 package org.ivdnt.galahad.jobs
 
-import org.ivdnt.galahad.TestConfig
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.port.createCorpus
-import org.ivdnt.galahad.taggers.TaggerStore
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.taggers.Tagger
+import org.ivdnt.galahad.util.TestUtil
+
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,7 +14,7 @@ class JobsTest {
 
     @BeforeEach
     fun initCorpus() {
-        corpus = createCorpus()
+        corpus = TestUtil.createCorpus()
     }
 
     @Test
@@ -21,12 +22,12 @@ class JobsTest {
         val name = TestConfig.TAGGER_NAME
         // Check if empty
         assertEquals(0, corpus.jobs.readAll().size)
-        val numTaggers = TaggerStore().taggers.size + 1 // +1 for source layer
+        val numTaggers = Tagger.taggers.size + 1 // +1 for source layer
         assertEquals(numTaggers, corpus.jobs.readAllJobStatesIncludingPotentialJobs().size)
         assertNull(corpus.jobs.readOrNull(name))
         assertThrows(Exception::class.java) { corpus.jobs.readOrThrow(name) }
         // Create
-        val job = corpus.jobs.createOrNull(name)
+        val job = corpus.jobs.createOrThrow(name)
         // Check if created
         assertNotNull(job)
         assertEquals(1, corpus.jobs.readAll().size)
@@ -34,7 +35,7 @@ class JobsTest {
         assertNotNull(corpus.jobs.readOrNull(name))
         assertNotNull(corpus.jobs.readOrThrow(name))
         // delete
-        corpus.jobs.delete(name)
+        corpus.jobs.deleteOrThrow(name)
         // Check if deleted
         assertEquals(0, corpus.jobs.readAll().size)
         assertNull(corpus.jobs.readOrNull(name))

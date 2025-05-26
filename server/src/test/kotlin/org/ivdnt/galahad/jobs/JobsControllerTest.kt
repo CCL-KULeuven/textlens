@@ -1,10 +1,11 @@
 package org.ivdnt.galahad.jobs
 
-import org.ivdnt.galahad.TestConfig
+import org.ivdnt.galahad.annotations.Layer
+import org.ivdnt.galahad.util.TestConfig
 import org.ivdnt.galahad.app.Config
-import org.ivdnt.galahad.app.GalahadApplication
-import org.ivdnt.galahad.createCorpus
-import org.ivdnt.galahad.port.Resource
+import org.ivdnt.galahad.app.Galahad
+import org.ivdnt.galahad.util.SpringUtil
+import org.ivdnt.galahad.util.TestUtil
 import org.ivdnt.galahad.web.controller.JobsController
 import org.ivdnt.galahad.web.controller.TaggersController
 import org.junit.jupiter.api.Assertions.*
@@ -21,7 +22,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.util.*
 
-@ContextConfiguration(classes = [GalahadApplication::class, TestConfig::class])
+@ContextConfiguration(classes = [Galahad::class, TestConfig::class])
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = ["server.port=8010", "spring.main.allow-bean-definition-overriding=true"]
@@ -36,9 +37,9 @@ class JobsControllerTest(
     @Disabled
     @Test
     fun postJob() {
-        val corpus = createCorpus(config)
-        val docName = corpus.documents.create(Resource.get("all-formats/input/input.tei.xml"))
-        val uuid = corpus.metadata.expensiveGet().uuid
+        val corpus = SpringUtil.createCorpus(config)
+        val doc = corpus.documents.createOrThrow(TestUtil.get("all-formats/input/input.tei.xml"))
+        val uuid = corpus.immutableMetadata.uuid
 
         assertEquals(taggers.getTaggers().size + 1, getJobs(uuid).size) // +1 for the sourceLayer
         var progress: Progress =
@@ -54,14 +55,9 @@ class JobsControllerTest(
         assertEquals(1, progress.finished)
 
         // check result
-        val resultPreview = getDocumentJobResult(uuid, TestConfig.TAGGER_NAME, docName)
-        assertEquals(TestConfig.TAGGER_NAME, resultPreview.name)
-        assertTrue(resultPreview.summary.numWordForms > 0)
-        assertTrue(resultPreview.summary.numTerms > 0)
-        assertTrue(resultPreview.summary.numLemma > 0)
-        assertTrue(resultPreview.summary.numPOS > 0)
+        val resultPreview = getDocumentJobResult(uuid, TestConfig.TAGGER_NAME, doc.name)
+        assertTrue(resultPreview.summary.tokens > 0)
         assertTrue(resultPreview.preview.terms.isNotEmpty())
-        assertTrue(resultPreview.preview.wordforms.isNotEmpty())
     }
 
     private fun pollProgress(uuid: UUID, job: String): Progress {
@@ -70,19 +66,19 @@ class JobsControllerTest(
         ).body!!
     }
 
-    private fun getJobs(uuid: UUID): Set<JobState> {
+    private fun getJobs(uuid: UUID): Set<JobMetadata> {
         return rest.exchange("/corpora/$uuid/jobs?includePotentialJobs=true",
             HttpMethod.GET,
             getHeaders(),
-            object : ParameterizedTypeReference<Set<JobState>>() {}).body!!
+            object : ParameterizedTypeReference<Set<JobMetadata>>() {}).body!!
     }
 
-    private fun getDocumentJobResult(uuid: UUID, job: String, document: String): DocumentJobResult {
+    private fun getDocumentJobResult(uuid: UUID, job: String, document: String): Layer {
         return rest.exchange(
             "/corpora/$uuid/jobs/$job/documents/$document/result",
             HttpMethod.GET,
             getHeaders(),
-            DocumentJobResult::class.java
+            Layer::class.java
         ).body!!
     }
 

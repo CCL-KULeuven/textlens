@@ -1,13 +1,13 @@
 package org.ivdnt.galahad.evaluation.assays
 
-import org.ivdnt.galahad.JSON
-import org.ivdnt.galahad.TestConfig
 import org.ivdnt.galahad.app.Config
-import org.ivdnt.galahad.app.GalahadApplication
+import org.ivdnt.galahad.app.Galahad
 import org.ivdnt.galahad.evaluation.EvaluationUtil
 import org.ivdnt.galahad.evaluation.metrics.FlatMetricType
-import org.ivdnt.galahad.port.LayerBuilder
-import org.ivdnt.galahad.port.createCorpus
+import org.ivdnt.galahad.util.JSON
+import org.ivdnt.galahad.util.LayerBuilder
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.util.TestUtil
 import org.ivdnt.galahad.web.controller.BenchmarksMatrix
 import org.ivdnt.galahad.web.controller.BenchmarksController
 import org.junit.jupiter.api.Assertions.*
@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import java.io.File
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class, TestConfig::class])
+@ContextConfiguration(classes = [Galahad::class, TestConfig::class])
 class BenchmarksControllerTest(
     @Autowired val mvc: MockMvc,
     @Autowired val config: Config,
@@ -30,11 +30,11 @@ class BenchmarksControllerTest(
     @Test
     fun getAssays() {
         // No assays should exist
-        var assays = ctrl.benchmarksMatrix.get<BenchmarksMatrix>()
+        var assays = ctrl.benchmarksMatrix.readOrCreate<BenchmarksMatrix>()
         assertEquals(0, assays.size)
 
         // Need a corpus first
-        val corpus = createCorpus(
+        val corpus = TestUtil.createCorpus(
             config.getWorkingDirectory().resolve("corpora").resolve("custom"),
             isDataset = true,
             isAdmin = true
@@ -42,17 +42,17 @@ class BenchmarksControllerTest(
 
         // Neither should individual ones
         val assayRequest: MvcResult = mvc.perform(
-            MockMvcRequestBuilders.get("/benchmarks/${corpus.metadata.expensiveGet().uuid}/pie-tdn")
+            MockMvcRequestBuilders.get("/benchmarks/${corpus.immutableMetadata.uuid}/pie-tdn")
         ).andReturn()
         assertEquals("", assayRequest.response.contentAsString)
 
         // Add result
-        val name = corpus.documents.create(File.createTempFile("tmp", ".txt"))
+        val doc = corpus.documents.createOrThrow(File.createTempFile("tmp", ".txt"))
         val layer = LayerBuilder().loadDummies(100).build()
-        EvaluationUtil.addLayersAsJobs(corpus, name, layer, layer)
+        EvaluationUtil.addLayersAsJobs(corpus, doc.name, layer, layer)
 
         // job assay should exist
-        assertNotNull(corpus.jobs.readOrThrow(TestConfig.TAGGER_NAME).assay.get<Map<String, FlatMetricType>>())
+        assertNotNull(corpus.jobs.readOrThrow(TestConfig.TAGGER_NAME).assay.readOrCreate<Map<String, FlatMetricType>>())
 
         // /GET
         val assaysRequest: MvcResult = mvc.perform(

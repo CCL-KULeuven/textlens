@@ -2,11 +2,15 @@ package org.ivdnt.galahad.data
 
 import org.ivdnt.galahad.*
 import org.ivdnt.galahad.app.Config
-import org.ivdnt.galahad.app.GalahadApplication
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.data.document.DocumentMetadata
-import org.ivdnt.galahad.port.Resource
-import org.ivdnt.galahad.util.createZipFile
+import org.ivdnt.galahad.app.Galahad
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.documents.DocumentMetadata
+import org.ivdnt.galahad.util.JSON
+import org.ivdnt.galahad.util.SpringUtil
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.util.TestUtil
+import org.ivdnt.galahad.util.UserHeader
+import org.ivdnt.galahad.util.uploadFile
 import org.ivdnt.galahad.web.controller.DocumentsController
 import org.junit.jupiter.api.Test
 
@@ -18,10 +22,14 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class, TestConfig::class])
+@ContextConfiguration(classes = [Galahad::class, TestConfig::class])
 class DocumentsControllerTest(
     @Autowired val mvc: MockMvc,
     @Autowired val config: Config,
@@ -30,10 +38,10 @@ class DocumentsControllerTest(
 
     @Test
     fun `Upload files of all formats`() {
-        val corpus = createCorpus(config)
+        val corpus = SpringUtil.createCorpus(config)
 
         // list files in directory
-        val dir: File = Resource.get("all-formats/input")
+        val dir: File = TestUtil.get("all-formats/input")
         for (file in dir.listFiles()) {
             // skip layer pie-tdn.tsv
             if (file.name != "pie-tdn.tsv") {
@@ -44,11 +52,11 @@ class DocumentsControllerTest(
         assertEquals(6, getDocs(corpus).size)
         // Get raw file
         val doc = getDocs(corpus)[0]
-        val uuid = corpus.metadata.expensiveGet().uuid
+        val uuid = corpus.immutableMetadata.uuid
         val result: MvcResult = mvc.perform(
             MockMvcRequestBuilders.get("/corpora/$uuid/documents/${doc.name}/raw").headers(UserHeader.get())
         ).andReturn()
-        assertEquals(Resource.get("all-formats/input/${doc.name}").readText(), result.response.contentAsString)
+        assertEquals(TestUtil.get("all-formats/input/${doc.name}").readText(), result.response.contentAsString)
         // Delete a doc
         mvc.perform(
             MockMvcRequestBuilders.delete("/corpora/$uuid/documents/${doc.name}").headers(UserHeader.get())
@@ -59,22 +67,36 @@ class DocumentsControllerTest(
 
     @Test
     fun `Upload zip with all formats`() {
-        val corpus = createCorpus(config)
-        val zip = createZipFile(Resource.get("all-formats/input").listFiles().filter { it.name != "pie-tdn.tsv" }.asSequence())
+        val corpus = SpringUtil.createCorpus(config)
+        val files = TestUtil.get("formats/shared-converter").listFiles()
+        val zip = zipped(files.asIterable())
         mvc.uploadFile(zip, corpus, MediaType.APPLICATION_OCTET_STREAM_VALUE)
         assertEquals(6, getDocs(corpus).size)
     }
 
+    fun zipped(files: Iterable<File>): File {
+        val zipFile = File.createTempFile("tmp", ".zip")
+        val zipStream = ZipOutputStream(FileOutputStream(zipFile))
+        for (f in files) {
+            zipStream.putNextEntry(ZipEntry(f.name))
+            f.inputStream().copyTo(zipStream)
+            zipStream.closeEntry()
+        }
+        zipStream.flush()
+        zipStream.close()
+        return zipFile
+    }
+
     @Test
     fun `Upload invalid file`() {
-        val corpus = createCorpus(config)
-        val zip = createZipFile(Resource.get("all-formats/invalid").listFiles().asSequence())
-        assertThrows(Exception::class.java){ mvc.uploadFile(zip, corpus, MediaType.APPLICATION_OCTET_STREAM_VALUE) }
+        val corpus = SpringUtil.createCorpus(config)
+        val file = TestUtil.get("documents/invalid-root.xml")
+        assertThrows(Exception::class.java){ mvc.uploadFile(file, corpus, MediaType.APPLICATION_XML_VALUE) }
     }
 
     private fun getDocs(corpus: Corpus): List<DocumentMetadata> {
         // Request doc metadata
-        val uuid = corpus.metadata.expensiveGet().uuid
+        val uuid = corpus.immutableMetadata.uuid
         val result: MvcResult = mvc.perform(
             MockMvcRequestBuilders.get("/corpora/$uuid/documents").headers(UserHeader.get())
         ).andReturn()

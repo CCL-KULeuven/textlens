@@ -1,12 +1,12 @@
 package org.ivdnt.galahad.data
 
-import org.ivdnt.galahad.JSON
-import org.ivdnt.galahad.TestConfig
-import org.ivdnt.galahad.UserHeader
+import org.ivdnt.galahad.util.JSON
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.util.UserHeader
 import org.ivdnt.galahad.app.Config
-import org.ivdnt.galahad.app.GalahadApplication
-import org.ivdnt.galahad.data.corpus.CorpusMetadata
-import org.ivdnt.galahad.data.corpus.MutableCorpusMetadata
+import org.ivdnt.galahad.app.Galahad
+import org.ivdnt.galahad.corpora.CorpusMetadata
+import org.ivdnt.galahad.corpora.MutableCorpusMetadata
 import org.ivdnt.galahad.web.controller.CorporaController
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -18,13 +18,12 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
-import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import java.nio.charset.StandardCharsets
 import java.util.*
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class, TestConfig::class])
+@ContextConfiguration(classes = [Galahad::class, TestConfig::class])
 class CorporaControllerTest(
     @Autowired val mvc: MockMvc,
     @Autowired val config: Config,
@@ -34,7 +33,7 @@ class CorporaControllerTest(
     @Test
     fun `Post unicode name corpora`() {
         val name = "日本語"
-        val meta = MutableCorpusMetadata("", name, 0, 0, "",null, false, null, null, null, null)
+        val meta = MutableCorpusMetadata("", name, 0, 0, "", null, false, mutableSetOf(), mutableSetOf(), null, null)
 
         val uuid = postCorpus(meta)
 
@@ -50,8 +49,8 @@ class CorporaControllerTest(
     @Test
     fun `Test owner, collaborators and viewers`() {
         val owner = "testUser"
-        val collabs = setOf("collab1", owner)
-        val viewers = setOf("viewer1", "collab1", owner)
+        val collabs = mutableSetOf("collab1", owner)
+        val viewers = mutableSetOf("viewer1", "collab1", owner)
 
         // Create
         val meta = MutableCorpusMetadata(
@@ -72,8 +71,8 @@ class CorporaControllerTest(
 
         // Update with new collaborators
         val moreSharers = meta.also {
-            it.collaborators = setOf("collab1", "collab2")
-            it.viewers = setOf("viewer1", "viewer2")
+            it.collaborators = mutableSetOf("collab1", "collab2")
+            it.viewers = mutableSetOf("viewer1", "viewer2")
         }
 
         // Try to update as viewer
@@ -87,8 +86,8 @@ class CorporaControllerTest(
 
         // Let viewer2 remove themselves
         val viewer2gone = meta.also {
-            it.collaborators = setOf("collab1", "collab2")
-            it.viewers = setOf("viewer1")
+            it.collaborators = mutableSetOf("collab1", "collab2")
+            it.viewers = mutableSetOf("viewer1")
         }
         assertDoesNotThrow { updateCorpus(uuid, viewer2gone, "viewer2") }
 
