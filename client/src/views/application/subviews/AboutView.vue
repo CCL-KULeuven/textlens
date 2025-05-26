@@ -43,8 +43,7 @@
 </template>
 
 <script setup lang='ts'>
-import versionYaml from '@/../version.yml'
-import { GCard, KeyValues } from '@/components'
+import { GCard} from '@/components'
 </script>
 
 <style scoped="true">

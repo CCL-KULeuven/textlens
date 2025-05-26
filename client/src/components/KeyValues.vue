@@ -76,6 +76,8 @@ export default defineComponent({
 <style scoped lang="scss">
 table {
   border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 tr {
