@@ -189,6 +189,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+server/gradle/caches/
+server/gradle/kotlin-profile/
+server/gradle/native/
+server/gradle/wrapper/dists/
+server/gradle/daemon/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
