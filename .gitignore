@@ -20,6 +20,9 @@ server/data/corpora/custom
 .gradle
 /build/
 
+# Uploaded data
+server/data/corpora/user/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
