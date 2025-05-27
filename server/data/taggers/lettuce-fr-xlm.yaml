@@ -4,9 +4,9 @@ tagset: TreeTagger
 eraFrom: "0"
 eraTo: "2024"
 language: "French"
-produces:
+annotations:
+  - token
   - pos
-  - id
 model:
   name: lettuce_fr_xlm
   href: todo

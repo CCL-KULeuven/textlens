@@ -4,9 +4,9 @@ tagset: STTS
 eraFrom: "0"
 eraTo: "2024"
 language: "German"
-produces:
+annotations:
+  - token
   - pos
-  - id
 model:
   name: lettuce_de_mono
   href: todo

@@ -4,15 +4,14 @@ tagset: "UPOS"
 eraFrom: "2000"
 eraTo: "2020"
 language: "Dutch"
-produces:
+annotations:
+  - token
   - lemma
   - pos
   - upos
   - head
   - deprel
-  - misc
-  - id
-  - named-entity
+  - ner
 model:
   name: Dutch alpino
   href: https://stanfordnlp.github.io/stanza/performance.html#system-performance-on-ud-treebanks

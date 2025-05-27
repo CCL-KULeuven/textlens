@@ -1,9 +1,8 @@
-id: spacy-nl-lg
-description: "spaCy nl_core_news_lg 3.8.0"
-tagset: UPOS
-eraFrom: "0"
-eraTo: "2024"
-language: "Dutch"
+id: spacy
+description: "spacy"
+tagset: "Universal Dependencies"
+eraFrom: "2000"
+eraTo: "2020"
 annotations:
   - token
   - lemma
@@ -17,7 +16,7 @@ model:
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
 software:
   name: spacy
-  href: https://spacy.io/models/nl
+  href: https://spacy.io
 dataset:
   name: nl_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0

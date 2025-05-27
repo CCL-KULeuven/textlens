@@ -4,15 +4,14 @@ tagset: UPOS
 eraFrom: "0"
 eraTo: "2024"
 language: "French"
-produces:
+annotations:
+  - token
   - lemma
   - pos
   - upos
   - head
   - deprel
-  - misc
-  - id
-  - named-entity
+  - ner
 model:
   name: fr_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/fr_core_news_lg-3.8.0

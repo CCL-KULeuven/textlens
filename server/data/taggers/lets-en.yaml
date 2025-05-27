@@ -1,9 +1,9 @@
-id: lets-nl
+id: lets-en
 description: "LeTs"
-tagset: CGN
+tagset: UNK
 eraFrom: "0"
 eraTo: "2024"
-language: "Dutch"
+language: "English"
 annotations:
   - token
   - lemma
@@ -18,6 +18,6 @@ software:
 dataset:
   name: todo
   href: https://lt3.ugent.be/resources/lets/
-trainedBy: "lettuce"
+trainedBy: "LT3"
 date: "2024-05-30"
-devport: 8130
+devport: 8133

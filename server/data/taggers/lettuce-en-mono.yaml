@@ -4,9 +4,9 @@ tagset: Penn
 eraFrom: "0"
 eraTo: "2024"
 language: "English"
-produces:
+annotations:
+  - token
   - pos
-  - id
 model:
   name: lettuce_en_mono
   href: todo

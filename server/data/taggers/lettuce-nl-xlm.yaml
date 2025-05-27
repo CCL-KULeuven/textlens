@@ -4,9 +4,9 @@ tagset: CGN
 eraFrom: "0"
 eraTo: "2024"
 language: "Dutch"
-produces:
+annotations:
+  - token
   - pos
-  - id
 model:
   name: lettuce_nl_mono
   href: https://huggingface.co/collections/pranaydeeps/lettuce-pos-taggers-6638e94c11063400f5796feb
