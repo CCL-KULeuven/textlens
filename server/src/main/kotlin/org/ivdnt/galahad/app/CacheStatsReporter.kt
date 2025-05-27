@@ -1,17 +1,21 @@
 package org.ivdnt.galahad.app
 
-import org.springframework.scheduling.annotation.Scheduled
 import org.apache.logging.log4j.kotlin.Logging
-import org.ivdnt.galahad.FileBackedValue
+import org.ivdnt.galahad.files.DiskValue
 import org.ivdnt.galahad.util.toFixed
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.util.concurrent.TimeUnit
 
 @Component
 class CacheStatsReporter : Logging {
-    @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedDelayString = "\${galahad.logging.cache-period}")
     fun reportStats() {
-        val stats = FileBackedValue.cache.stats()
-        logger.info("Cache hit rate: ${stats.hitRate().toFixed()} [hit: ${stats.hitCount()} miss: ${stats.missCount()} evictions: ${stats.evictionCount()}]")
+        val stats = DiskValue.cache.stats()
+        val rate = stats.hitRate().toFixed()
+        val hits = stats.hitCount()
+        val miss = stats.missCount()
+        val evictions = stats.evictionCount()
+        val entries = DiskValue.cache.estimatedSize()
+        logger.info("Cache: [rate: $rate; hits: $hits;  miss: $miss;  evictions: $evictions; entries: $entries]")
     }
 }

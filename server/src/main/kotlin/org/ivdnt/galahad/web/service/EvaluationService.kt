@@ -2,21 +2,21 @@ package org.ivdnt.galahad.web.service
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.ivdnt.galahad.data.corpus.CorpusMetadata
-import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
-import org.ivdnt.galahad.data.layer.AnnotationType
+import org.ivdnt.galahad.annotations.Annotation
+import org.ivdnt.galahad.annotations.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.annotations.Term
+import org.ivdnt.galahad.app.User
+import org.ivdnt.galahad.corpora.CorpusMetadata
 import org.ivdnt.galahad.evaluation.comparison.*
 import org.ivdnt.galahad.evaluation.confusion.CONFUSION_TYPES
 import org.ivdnt.galahad.evaluation.confusion.CorpusConfusion
 import org.ivdnt.galahad.evaluation.distribution.CorpusDistribution
-import org.ivdnt.galahad.evaluation.metrics.ClassificationType
-import org.ivdnt.galahad.evaluation.metrics.CorpusMetrics
-import org.ivdnt.galahad.evaluation.metrics.METRIC_TYPES
+import org.ivdnt.galahad.evaluation.frequency.TokenFrequency
+import org.ivdnt.galahad.evaluation.metrics.*
 import org.ivdnt.galahad.exceptions.AnnotationNotSupported
 import org.ivdnt.galahad.exceptions.InvalidMetricsTypeException
-import org.ivdnt.galahad.port.csv.CSVFile
-import org.ivdnt.galahad.taggers.TaggerStore
-import org.ivdnt.galahad.util.createZipFile
+import org.ivdnt.galahad.export.csv.CSVFile
+import org.ivdnt.galahad.taggers.Tagger
 import org.ivdnt.galahad.util.setContentDisposition
 import org.ivdnt.galahad.util.toValidFileName
 import org.ivdnt.galahad.web.controller.DISTRIBUTION_MAX_SIZE
@@ -36,20 +36,20 @@ class EvaluationService(val corpora: CorporaService) {
     @Autowired
     private val response: HttpServletResponse? = null
 
-    private val taggerStore = TaggerStore()
+    private val user: User get() = User.fromRequest(request)
 
     fun getDistribution(
         corpus: UUID,
         job: String,
-    ): Map<AnnotationType, CorpusDistribution> {
+    ): Map<Annotation, CorpusDistribution> {
         val allAnnots = annotationTypesForTagger(job, corpus)
-        if (!allAnnots.contains(AnnotationType.LEMMA)) {
+        if (Annotation.LEMMA !in allAnnots) {
             return emptyMap()
         }
-        val annotationTypes = CONFUSION_TYPES.filter { allAnnots.contains(it) }
+        val annotationTypes = CONFUSION_TYPES.filter { it in allAnnots }
         val distributions = annotationTypes.associateWith {
             CorpusDistribution(
-                corpora.getReadAccessOrThrow(corpus, request),
+                corpora.readAsReaderOrThrow(corpus, user),
                 job,
                 it
             ).trim(DISTRIBUTION_MAX_SIZE) as CorpusDistribution
@@ -61,12 +61,12 @@ class EvaluationService(val corpora: CorporaService) {
         corpus: UUID,
         job: String,
         reference: String?,
-    ): Map<AnnotationType, CorpusConfusion> {
+    ): Map<Annotation, CorpusConfusion> {
         val allAnnots = annotationTypesForTagger(job, corpus)
-        val annotationTypes = CONFUSION_TYPES.filter { allAnnots.contains(it) }
+        val annotationTypes = CONFUSION_TYPES.filter { it in allAnnots }
         val confusions = annotationTypes.associateWith {
             CorpusConfusion(
-                corpora.getReadAccessOrThrow(corpus, request),
+                corpora.readAsReaderOrThrow(corpus, user),
                 hypothesis = job,
                 annotation = it,
                 reference = if (reference.isNullOrBlank()) SOURCE_LAYER_NAME else reference,
@@ -78,26 +78,25 @@ class EvaluationService(val corpora: CorporaService) {
     fun getConfusionSamples(
         hypoFilter: String,
         refFilter: String,
-        annotation: String,
+        annotation: Annotation,
         corpus: UUID,
         job: String,
         reference: String,
     ): ByteArray {
         // Ensure the job has the required annotation types.
-        val annotationType = AnnotationType.fromString(annotation)
-        if (!annotationTypesForTagger(job, corpus).contains(annotationType)) {
-            throw AnnotationNotSupported(job, annotationType)
+        if (annotation !in annotationTypesForTagger(job, corpus)) {
+            throw AnnotationNotSupported(job, annotation)
         }
         var layerFilter: ConfusionLayerFilter? = ConfusionLayerFilter(
-            HeadGroupTermFilter(annotationType, hypoFilter),
-            HeadGroupTermFilter(annotationType, refFilter),
+            HeadGroupTermFilter(annotation, hypoFilter),
+            HeadGroupTermFilter(annotation, refFilter),
         )
         val cc = CorpusConfusion(
-            corpus = corpora.getReadAccessOrThrow(corpus, request),
+            corpus = corpora.readAsReaderOrThrow(corpus, user),
             hypothesis = job,
             reference = reference,
             layerFilter = layerFilter,
-            annotation = AnnotationType.fromString(annotation)
+            annotation = annotation
         )
         val fileName = "confusion-${refFilter}-${hypoFilter}.csv"
         val csv = cc.samplesToCSV()
@@ -109,9 +108,12 @@ class EvaluationService(val corpora: CorporaService) {
         job: String,
         reference: String?,
     ): CorpusMetrics {
-        val corpusObj = corpora.getReadAccessOrThrow(corpus, request)
+        val corpusObj = corpora.readAsReaderOrThrow(corpus, user)
         val allAnnots = annotationTypesForTagger(job, corpus)
-        val settings = METRIC_TYPES.filter { it.requiredAnnotations.all { allAnnots.contains(it) } }
+        val settings = METRIC_TYPES.filter { it.requiredAnnotations.all { it in allAnnots } }.toMutableList()
+        val freq = TokenFrequency(corpusObj, job)
+        val freqSettings = settings.map { FrequencyMetricsSettings(freq, it) }
+        settings.addAll(freqSettings)
         val cm = CorpusMetrics(
             corpusObj,
             settings = settings,
@@ -143,7 +145,7 @@ class EvaluationService(val corpora: CorporaService) {
         }
 
         val cm = CorpusMetrics(
-            corpus = corpora.getReadAccessOrThrow(corpus, request),
+            corpus = corpora.readAsReaderOrThrow(corpus, user),
             hypothesis = job,
             reference = reference,
             layerFilter = layerFilter,
@@ -164,13 +166,12 @@ class EvaluationService(val corpora: CorporaService) {
     }
 
     fun getDocumentLevelLayerVisualisation(
-        corpus: UUID, document: String, job: String, reference: String?
+        corpus: UUID, document: String, job: String, reference: String?,
     ): List<TermComparison> {
         val reference: String = reference ?: SOURCE_LAYER_NAME
         return DocumentLayerComparison(
-            hypothesisLayer = corpora.getReadAccessOrThrow(corpus, request).jobs.readOrThrow(job).documentOrThrow(document).result,
-            referenceLayer = corpora.getReadAccessOrThrow(corpus, request).jobs.readOrThrow(reference).documentOrThrow(document).result,
-            layerFilter = null
+            hypothesisLayer = corpora.readAsReaderOrThrow(corpus, user).jobs.readOrThrow(job).getLayer(document),
+            referenceLayer = corpora.readAsReaderOrThrow(corpus, user).jobs.readOrThrow(reference).getLayer(document)
         ).matches
     }
 
@@ -191,7 +192,7 @@ class EvaluationService(val corpora: CorporaService) {
         response.setContentDisposition(metadata.name + "-evaluation.zip")
 
         // zip the directory
-        val zipFile = createZipFile(dir.listFiles()!!.asSequence())
+        val zipFile = dir // createZipFile(dir.listFiles()!!.asSequence()) // TODO: Fix this
         return zipFile.readBytes()
     }
 
@@ -225,7 +226,7 @@ class EvaluationService(val corpora: CorporaService) {
     private fun writeMetadataToDir(
         corpus: UUID, job: String, reference: String?, dir: File,
     ): CorpusMetadata {
-        val metadata = corpora.getReadAccessOrThrow(corpus, request).metadata.expensiveGet()
+        val metadata = corpora.readAsReaderOrThrow(corpus, user).immutableMetadata
 
         val metadataFile = File(dir.resolve("metadata.txt").toURI())
         metadataFile.appendText("Evaluation generated by Galahad\n")
@@ -238,9 +239,9 @@ class EvaluationService(val corpora: CorporaService) {
         return metadata
     }
 
-    private fun annotationTypesForTagger(job: String, corpus: UUID): List<AnnotationType> {
-        val sourceTagger = corpora.getReadAccessOrThrow(corpus, request).sourceTagger
-        return taggerStore.getSummaryOrThrow(job, sourceTagger).expensiveGet().annotationTypes
+    private fun annotationTypesForTagger(job: String, corpus: UUID): Set<Annotation> {
+        val corpusObj = corpora.readAsReaderOrThrow(corpus, user)
+        return Tagger.readOrThrow(job, corpusObj).annotations
     }
 
     fun samplesToZip(
@@ -257,11 +258,30 @@ class EvaluationService(val corpora: CorporaService) {
         file.appendText(csvBody)
         // Write metadata & create zip
         val metadata = writeMetadataToDir(corpus, job, reference, dir)
-        val zipFile = createZipFile(dir.listFiles()!!.asSequence())
+        val zipFile = dir //createZipFile(dir.listFiles()!!.asSequence()) // TODO: Fix this
         // Configure response for zip.
         response!!.contentType = "application/zip"
         response.setContentDisposition(metadata.name + "-evaluation.zip")
         // zip the directory
         return zipFile.readBytes()
+    }
+
+    fun getTokenFrequency(corpus: UUID, job: String, reference: String?): CorpusMetrics {
+        val corpusObj = corpora.readAsReaderOrThrow(corpus, user)
+        val setting = FrequencyMetricsSettings(TokenFrequency(corpusObj, job), LemmaByLemmaMetricsSettings())
+        val settings = listOf(setting)
+        val cm = CorpusMetrics(
+            corpusObj,
+            settings = settings,
+            hypothesis = job,
+            reference = if (reference.isNullOrBlank()) SOURCE_LAYER_NAME else reference
+        )
+        return cm
+    }
+
+    fun getEntities(corpus: UUID, document: String, job: String): List<Pair<String, List<Term>>>{
+        val layer = corpora.readAsReaderOrThrow(corpus, user).jobs.readOrThrow(job).getLayer(document)
+        return layer.documents.flatMap { it.paragraphs.flatMap { it.sentences.flatMap { sent -> sent.spans?.get(Annotation.NER)
+            ?.map { span -> span.value to span.indices.map { sent.terms[it] } } ?: emptyList() } } }
     }
 }

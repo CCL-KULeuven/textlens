@@ -8,13 +8,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.ivdnt.galahad.annotations.Layer
 import org.ivdnt.galahad.app.JOBS_URL
 import org.ivdnt.galahad.app.JOB_URL
-import org.ivdnt.galahad.exceptions.ErrorResponse
-import org.ivdnt.galahad.jobs.DocumentJobResult
-import org.ivdnt.galahad.jobs.JobState
+import org.ivdnt.galahad.app.User
+import org.ivdnt.galahad.jobs.JobMetadata
 import org.ivdnt.galahad.jobs.Jobs
 import org.ivdnt.galahad.jobs.Progress
+import org.ivdnt.galahad.exceptions.ErrorResponse
 import org.ivdnt.galahad.web.service.CorporaService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -32,8 +33,10 @@ class JobsController(
     @Autowired
     private val response: HttpServletResponse? = null
 
-    fun UUID.readJobs(): Jobs = corpora.getReadAccessOrThrow(this, request).jobs
-    fun UUID.writeJobs(): Jobs = corpora.getWriteAccessOrThrow(this, request).jobs
+    private val user get() = User.fromRequest(request)
+
+    fun UUID.readJobs(): Jobs = corpora.readAsReaderOrThrow(this, user).jobs
+    fun UUID.writeJobs(): Jobs = corpora.readAsWriterOrThrow(this, user).jobs
 
     // TODO could this be replaced by /taggers?
     @Operation(
@@ -45,9 +48,9 @@ class JobsController(
     fun getJobs(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @RequestParam(defaultValue = "true") @Parameter(description = "Only show jobs that have a result. Otherwise also shows potential jobs.") hasResult: Boolean = true,
-    ): Set<JobState> {
+    ): Set<JobMetadata> {
         return if (hasResult) {
-            corpus.readJobs().readAllExistingJobs()
+            corpus.readJobs().readAll().map { it.metadata }.toSet()
         } else {
             corpus.readJobs().readAllJobStatesIncludingPotentialJobs()
         }
@@ -70,7 +73,7 @@ class JobsController(
     fun getJob(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
-    ): JobState? = corpus.readJobs().readOrThrow(job).state
+    ): JobMetadata? = corpus.readJobs().readOrThrow(job).metadata
 
     @Operation(
         summary = "Start job",
@@ -100,7 +103,7 @@ class JobsController(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
     ): Progress? {
-        corpus.writeJobs().readOrCreateOrThrow(job).start()
+        corpus.writeJobs().createOrThrow(job).start()
         response?.status = HttpServletResponse.SC_ACCEPTED
         return progress(corpus, job)
     }
@@ -162,15 +165,7 @@ class JobsController(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
         @PathVariable @Parameter(description = "Document name") document: String,
-    ): DocumentJobResult? {
-        val result = corpus.readJobs().readOrThrow(job).documentOrThrow(document).result
-        return DocumentJobResult(
-            preview = result.preview,
-            name = result.name,
-            tagset = result.tagset,
-            summary = result.summary,
-        )
-    }
+    ): Layer = corpus.readJobs().readOrThrow(job).jobDocuments.readOrThrow(document).layer!!
 
     @Operation(
         summary = "Get job progress",

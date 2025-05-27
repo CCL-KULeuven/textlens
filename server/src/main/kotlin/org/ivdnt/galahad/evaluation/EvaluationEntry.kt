@@ -5,16 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
 import kotlin.random.Random
 
-const val MAX_SAMPLE_LENGTH = 10
+const val MAX_SAMPLE_LENGTH: Int = 10
 
 data class EvaluationEntry(
     val count: Int = 0,
-    @JsonIgnore
-    val samples: MutableList<TermComparison> = mutableListOf(),
+    @JsonIgnore val samples: MutableList<TermComparison> = mutableListOf(),
 ) {
     @get:JsonProperty("samples")
-    val jsonSamples: List<TermComparison>
-        get() = samples.asSequence().shuffled().take(MAX_SAMPLE_LENGTH).toList()
+    val jsonSamples: List<TermComparison> get() = samples.asSequence().shuffled().take(MAX_SAMPLE_LENGTH).toList()
 
     companion object {
         /**

@@ -1,15 +1,33 @@
 package org.ivdnt.galahad.util
 
-import org.ivdnt.galahad.port.xml.tagName
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
+
+fun NodeList.deepcopy(): ArrayList<Node> {
+    val copy = ArrayList<Node>()
+    for (i in 0 until this.length) {
+        copy.add(this.item(i))
+    }
+    return copy
+}
+
+val Node.children: Sequence<Node>
+    get() = object : Sequence<Node> {
+        override fun iterator(): Iterator<Node> = object : Iterator<Node> {
+            var index = 0
+            override fun hasNext(): Boolean = index < childNodes.length
+            override fun next(): Node = childNodes.item(index++)
+        }
+    }
+
+val Node.childElements: Sequence<Element>
+    get() = children.mapNotNull { it.takeIf { it.nodeType == Node.ELEMENT_NODE } as Element? }
 
 /** Whether this node is contained in a node with name [tagName]*/
 fun Node.containedIn(tagName: String): Boolean {
-    if (this.parentNode == null)
-        return false
-    if (this.parentNode?.tagName() == tagName)
-        return true
+    if (this.parentNode == null) return false
+    if (this.parentNode?.localName == tagName) return true
     // Recursion
     return this.parentNode.containedIn(tagName)
 }
@@ -29,31 +47,14 @@ fun Node.insertFirst(newChild: Node) {
 }
 
 /** Returns the next sibling of the node that is not text. */
-fun Node.nextNonTextSibling(): Node? {
+fun Node.nextElementSibling(): Element? {
     var next = this.nextSibling
-    while (next != null && next.nodeType == Node.TEXT_NODE) {
+    while (next != null && next.nodeType != Node.ELEMENT_NODE) {
         next = next.nextSibling
     }
-    return next
+    return next as Element?
 }
 
-/** Looks for the first child node, 1 deep, or null. */
-fun Node.childOrNull(childTag: String, recurse: Boolean = false): Node? {
-    for (i in 0 until this.childNodes.length) {
-        if (this.childNodes.item(i).nodeType == Node.ELEMENT_NODE) {
-            if ((this.childNodes.item(i) as Element).tagName == childTag) {
-                return this.childNodes.item(i)
-            }
-            val childReturn = this.childNodes.item(i).childOrNull(childTag, recurse)
-            if (childReturn != null) {
-                return childReturn
-            }
-        }
-    }
-    return null
-}
-
-/** Looks for the first child node, 1 deep, or null. */
-fun Element.childOrNull(childTag: String): Element? {
-    return (this as Node).childOrNull(childTag) as Element?
-}
+fun Node.child(tag: String): Node = childElements.first { it.tagName == tag }
+fun Node.childOrNull(tag: String): Node? = childElements.firstOrNull { it.tagName == tag }
+fun Element.childOrNull(tag: String): Element? = (this as Node).childOrNull(tag) as Element?

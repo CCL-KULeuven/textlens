@@ -16,11 +16,10 @@ interface LayerFilter {
  */
 class ConfusionLayerFilter(
     override val hypoTermFilter: TermFilter,
-    override val refTermFilter: TermFilter
+    override val refTermFilter: TermFilter,
 ) : LayerFilter {
-    override fun filter(comp: TermComparison): Boolean {
-        return hypoTermFilter.filter(comp.hypoTerm) && refTermFilter.filter(comp.refTerm)
-    }
+    override fun filter(comp: TermComparison): Boolean =
+        hypoTermFilter.filter(comp.hypoTerm) && refTermFilter.filter(comp.refTerm)
 }
 
 /**
@@ -30,9 +29,8 @@ class ConfusionLayerFilter(
  */
 class MetricsLayerFilter(
     override val hypoTermFilter: TermFilter,
-    override val refTermFilter: TermFilter
+    override val refTermFilter: TermFilter,
 ) : LayerFilter {
-    override fun filter(comp: TermComparison): Boolean {
-        return hypoTermFilter.filter(comp.hypoTerm) || refTermFilter.filter(comp.refTerm)
-    }
+    override fun filter(comp: TermComparison): Boolean =
+        hypoTermFilter.filter(comp.hypoTerm) || refTermFilter.filter(comp.refTerm)
 }

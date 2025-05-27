@@ -2,12 +2,12 @@ package org.ivdnt.galahad.evaluation.metrics
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.ivdnt.galahad.data.layer.Layer
-import org.ivdnt.galahad.data.layer.Term
+import org.ivdnt.galahad.annotations.Layer
+import org.ivdnt.galahad.annotations.Term
 import org.ivdnt.galahad.evaluation.EvaluationEntry
-import org.ivdnt.galahad.port.csv.CSVFile
-import org.ivdnt.galahad.port.csv.CSVHeader
-import org.ivdnt.galahad.port.csv.CSVRecord
+import org.ivdnt.galahad.export.csv.CSVFile
+import org.ivdnt.galahad.export.csv.CSVHeader
+import org.ivdnt.galahad.export.csv.CSVRecord
 import org.ivdnt.galahad.util.toFixed
 
 /**
@@ -42,16 +42,14 @@ data class ClassificationMetrics(
     )
 
     companion object {
-        fun calculate(cls: ClassificationClasses): ClassificationMetrics {
-            return calculate(cls.flat)
-        }
+        fun calculate(cls: ClassificationClasses): ClassificationMetrics = calculate(cls.flat)
 
         fun calculate(cls: FlatClassificationClasses, micro: Boolean = false): ClassificationMetrics {
             val tp = cls.truePositive.toFloat()
             val fp = cls.falsePositive.toFloat()
             val fn = cls.falseNegative.toFloat()
             // When calculating micro-accuracy, tp and fp are the same, so don't double count.
-            val total = if(micro) tp + fp else cls.count.toFloat()
+            val total = if (micro) tp + fp else cls.count.toFloat()
             return calculate(tp, fp, fn, total)
         }
 
@@ -80,7 +78,7 @@ open class FlatClassificationClasses(
     var noMatch: Int = 0,
     var count: Int = 0,
 ) {
-    operator fun plus(other: FlatClassificationClasses) = FlatClassificationClasses(
+    operator fun plus(other: FlatClassificationClasses): FlatClassificationClasses = FlatClassificationClasses(
         truePositive + other.truePositive,
         falsePositive + other.falsePositive,
         falseNegative + other.falseNegative,
@@ -98,8 +96,7 @@ open class ClassificationClasses(
     /** sample count without duplicates, for calculating accuracy. */
     @JsonIgnore var count: Int = 1,
 ) {
-    open val classCount: Int
-        get() = truePositive.count + falsePositive.count + falseNegative.count + noMatch.count
+    open val classCount: Int get() = truePositive.count + falsePositive.count + falseNegative.count + noMatch.count
 
     fun add(other: ClassificationClasses, truncate: Boolean = true): ClassificationClasses {
         truePositive = EvaluationEntry.add(truePositive, other.truePositive, truncate)
@@ -126,7 +123,7 @@ data class Metric(
     @JsonProperty("classes") var cls: ClassificationClasses = ClassificationClasses(),
 ) {
     @get:JsonProperty("metrics")
-    val clsMetrics
+    val clsMetrics: ClassificationMetrics
         get() = ClassificationMetrics.calculate(cls)
 
     fun add(other: Metric, truncate: Boolean): Metric {
@@ -135,31 +132,35 @@ data class Metric(
     }
 
     fun toCSVRecord(): CSVRecord {
-        return CSVFile.toCSVRecord(listOf(
-            name,
-            clsMetrics.precision.toFixed(),
-            clsMetrics.recall.toFixed(),
-            clsMetrics.f1.toFixed(),
-            cls.classCount,
-            cls.truePositive.count,
-            cls.falsePositive.count,
-            cls.falseNegative.count,
-            cls.noMatch.count,
-        ))
+        return CSVFile.toCSVRecord(
+            listOf(
+                name,
+                clsMetrics.precision.toFixed(),
+                clsMetrics.recall.toFixed(),
+                clsMetrics.f1.toFixed(),
+                cls.classCount,
+                cls.truePositive.count,
+                cls.falsePositive.count,
+                cls.falseNegative.count,
+                cls.noMatch.count,
+            )
+        )
     }
 
     companion object {
         fun getCsvHeader(): CSVHeader {
-            return CSVFile.toCSVHeader(listOf(
-                "grouped by",
-                "precision",
-                "recall",
-                "f1",
-                "count",
-                "true positive count",
-                "false positive count",
-                "false negative count",
-                "no match count")
+            return CSVFile.toCSVHeader(
+                listOf(
+                    "grouped by",
+                    "precision",
+                    "recall",
+                    "f1",
+                    "count",
+                    "true positive count",
+                    "false positive count",
+                    "false negative count",
+                    "no match count"
+                )
             )
         }
     }

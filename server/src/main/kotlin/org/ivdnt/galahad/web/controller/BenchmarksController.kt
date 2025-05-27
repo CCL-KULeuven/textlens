@@ -8,13 +8,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.logging.log4j.kotlin.Logging
-import org.ivdnt.galahad.FileBackedCache
+import org.ivdnt.galahad.annotations.SOURCE_LAYER_NAME
 import org.ivdnt.galahad.app.BENCHMARKS_URL
 import org.ivdnt.galahad.app.BENCHMARK_URL
-import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.app.User
 import org.ivdnt.galahad.evaluation.metrics.FlatMetricType
 import org.ivdnt.galahad.evaluation.metrics.FlatMetricTypeAssay
 import org.ivdnt.galahad.exceptions.ErrorResponse
+import org.ivdnt.galahad.files.ValidatedDiskValue
 import org.ivdnt.galahad.web.service.CorporaService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.CrossOrigin
@@ -48,42 +49,45 @@ class BenchmarksController(
     @Autowired
     private val request: HttpServletRequest? = null
 
+    private val user get() = User.fromRequest(request)
+
     /**
      * A matrix of 'tagger' -> 'dataset' -> 'FlatMetric' -> 'scores per category',
      * for all datasets corpora that have been tagged with at least one tagger, excluding the sourceLayer.
      */
-    val benchmarksMatrix = object : FileBackedCache<BenchmarksMatrix>(corpora.assaysFile, HashMap()) {
-        override fun isValid(lastModified: Long): Boolean {
-            return corpora.datasets.firstOrNull { it.lastModified > lastModified } == null
-            TODO("Maybe just check the validity of the other assays?")
-        }
-
-        override fun set(): BenchmarksMatrix {
-            // tagger -> dataset -> assay
-            val assaysMatrix: MutableAssaysMatrix = HashMap()
-            // For all datasets
-            corpora.datasets.forEach { dataset ->
-                // For all jobs in the dataset
-                dataset.jobs.readAll()
-                    // Skip the source layer
-                    .filter { it.name != SOURCE_LAYER_NAME }
-                    // Add the assay to the matrix
-                    .forEach { job ->
-                        val meta = dataset.metadata.expensiveGet()
-                        // Initialize the dataset row if needed
-                        if (assaysMatrix[meta.name] == null) {
-                            assaysMatrix[meta.name] = HashMap()
-                        }
-                        val assay = getAssay(meta.uuid, job.name)
-                        assay?.forEach {
-                            assaysMatrix[meta.name]?.putIfAbsent(it.key, HashMap())
-                            assaysMatrix[meta.name]?.get(it.key)?.put(job.name, it.value)
-                        }
-                    }
+    val benchmarksMatrix: ValidatedDiskValue<BenchmarksMatrix> =
+        object : ValidatedDiskValue<BenchmarksMatrix>(corpora.assaysFile) {
+            override fun isValid(lastModified: Long): Boolean {
+                return corpora.datasets.firstOrNull { it.lastModified > lastModified } == null
+                TODO("Maybe just check the validity of the other assays?")
             }
-            return assaysMatrix
+
+            override fun set(): BenchmarksMatrix {
+                // tagger -> dataset -> assay
+                val assaysMatrix: MutableAssaysMatrix = HashMap()
+                // For all datasets
+                corpora.datasets.forEach { dataset ->
+                    // For all jobs in the dataset
+                    dataset.jobs.readAll()
+                        // Skip the source layer
+                        .filter { it.name != SOURCE_LAYER_NAME }
+                        // Add the assay to the matrix
+                        .forEach { job ->
+                            val meta = dataset.immutableMetadata
+                            // Initialize the dataset row if needed
+                            if (assaysMatrix[meta.name] == null) {
+                                assaysMatrix[meta.name] = HashMap()
+                            }
+                            val assay = getAssay(meta.uuid, job.name)
+                            assay?.forEach {
+                                assaysMatrix[meta.name]?.putIfAbsent(it.key, HashMap())
+                                assaysMatrix[meta.name]?.get(it.key)?.put(job.name, it.value)
+                            }
+                        }
+                }
+                return assaysMatrix
+            }
         }
-    }
 
     /**
      * Get the assay for a single job in a specific corpus. Also used to construct [benchmarksMatrix].
@@ -110,7 +114,10 @@ class BenchmarksController(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
     ): FlatMetricTypeAssay? {
-        return corpora.getReadAccessOrThrow(corpus, request).jobs.readOrNull(job)?.assay?.get<FlatMetricTypeAssay>()
+        return corpora.readAsReaderOrThrow(
+            corpus,
+            user
+        ).jobs.readOrNull(job)?.assay?.readOrCreate<FlatMetricTypeAssay>()
     }
 
     @Operation(
@@ -119,7 +126,5 @@ class BenchmarksController(
     )
     @CrossOrigin
     @GetMapping(BENCHMARKS_URL)
-    fun getAssays(): BenchmarksMatrix {
-        return benchmarksMatrix.get<BenchmarksMatrix>()
-    }
+    fun getAssays(): BenchmarksMatrix = benchmarksMatrix.readOrCreate<BenchmarksMatrix>()
 }

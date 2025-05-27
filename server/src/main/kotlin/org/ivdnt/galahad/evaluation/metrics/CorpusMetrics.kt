@@ -1,9 +1,12 @@
 package org.ivdnt.galahad.evaluation.metrics
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.annotations.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.corpora.Corpus
 import org.ivdnt.galahad.evaluation.comparison.LayerFilter
+import org.ivdnt.galahad.jobs.Job
+import org.ivdnt.galahad.taggers.Tagger
+import org.ivdnt.galahad.util.ThreadPoolUtil
+import java.util.concurrent.ExecutorCompletionService
 
 /**
  * The benchmark [Metric]s of a corpus for two different tagger layers.
@@ -15,32 +18,30 @@ class CorpusMetrics(
     hypothesis: String,
     reference: String = SOURCE_LAYER_NAME,
     layerFilter: LayerFilter? = null,
-    truncate: Boolean = true
-) : Metrics(corpus, settings, hypothesis, reference, truncate = truncate) {
+    truncate: Boolean = true,
+    hypoTagger2: Tagger = Tagger.readOrThrow(hypothesis, corpus),
+    refTagger2: Tagger = Tagger.readOrThrow(reference, corpus),
+    hypothesisJob2: Job = corpus.jobs.readOrThrow(hypothesis),
+    referenceJob2: Job = corpus.jobs.readOrThrow(reference),
+) : Metrics(settings, hypoTagger2, refTagger2, hypothesisJob2, referenceJob2, truncate = truncate) {
+    val hypothesisLastModified: Long = hypothesisJob.lastModified
 
-    private val hypothesisJob = corpus.jobs.readOrNull(hypothesis) ?: throw Exception("Hypothesis layer does not exist")
-    private val referenceJob = corpus.jobs.readOrNull(reference) ?: throw Exception("Reference layer does not exist")
+    val referenceLastModified: Long = referenceJob.lastModified
 
-    @JsonProperty
-    val hypothesisLastModified = hypothesisJob.lastModified
-    @JsonProperty
-    val referenceLastModified = referenceJob.lastModified
-    @JsonProperty
-    val generated = System.currentTimeMillis()
+    val generated: Long = System.currentTimeMillis()
 
     init {
-        corpus.documents.readAll().forEach {
-            val name = it.metadata.expensiveGet().name
-            add(
+        val completionService = ExecutorCompletionService<DocumentMetrics>(ThreadPoolUtil.pool)
+
+        val allDocs = corpus.documents.readAll()
+        allDocs.forEach {
+            completionService.submit {
                 DocumentMetrics(
-                    corpus,
-                    hypothesisJob.documentOrThrow(name).result,
-                    referenceJob.documentOrThrow(name).result,
-                    settings,
-                    layerFilter,
-                    truncate
+                    it, hypoTagger, refTagger, hypothesisJob, referenceJob, settings, layerFilter, truncate
                 )
-            )
+            }
         }
+
+        for (i in 0..<allDocs.size) add(completionService.take().get())
     }
 }

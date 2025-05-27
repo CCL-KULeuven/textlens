@@ -11,7 +11,7 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.ivdnt.galahad.app.DOCUMENTS_URL
 import org.ivdnt.galahad.app.DOCUMENT_RAW_FILE_URL
 import org.ivdnt.galahad.app.DOCUMENT_URL
-import org.ivdnt.galahad.data.document.DocumentMetadata
+import org.ivdnt.galahad.documents.DocumentMetadata
 import org.ivdnt.galahad.exceptions.ErrorResponse
 import org.ivdnt.galahad.util.setContentDisposition
 import org.ivdnt.galahad.web.service.CorporaService
@@ -48,9 +48,8 @@ class DocumentsController(
     )
     @CrossOrigin
     @GetMapping(DOCUMENTS_URL)
-    fun getAllDocuments(@PathVariable @Parameter(description = "Corpus UUID") corpus: UUID): Set<DocumentMetadata> {
-        return documentsService.readAll(corpus)
-    }
+    fun getAllDocuments(@PathVariable @Parameter(description = "Corpus UUID") corpus: UUID): Set<DocumentMetadata> =
+        documentsService.readAll(corpus)
 
     @Operation(
         summary = "Get single document metadata",
@@ -69,7 +68,7 @@ class DocumentsController(
     fun getDocument(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Document name") document: String,
-    ): DocumentMetadata? = documentsService.read(corpus, document).metadata.expensiveGet()
+    ): DocumentMetadata? = documentsService.read(corpus, document).metadata
 
     @Operation(
         summary = "Upload document or zip file",
@@ -129,7 +128,7 @@ class DocumentsController(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Document name") document: String,
     ): ByteArray {
-        val rawFile = documentsService.read(corpus, document).getUploadedRawFile()
+        val rawFile = documentsService.read(corpus, document).uploadedFile
         response?.contentType = "text/plain" // Default for text files. Even if it really means "unknown text file"
         response?.setContentDisposition(rawFile.name)
         return rawFile.readBytes()

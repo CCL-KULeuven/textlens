@@ -1,8 +1,8 @@
 package org.ivdnt.galahad.evaluation.distribution
 
-import org.ivdnt.galahad.data.document.DocumentMetadata
-import org.ivdnt.galahad.data.layer.AnnotationType
-import org.ivdnt.galahad.data.layer.Layer
+import org.ivdnt.galahad.annotations.Annotation
+import org.ivdnt.galahad.annotations.Layer
+import org.ivdnt.galahad.documents.DocumentMetadata
 
 /**
  * The frequency distribution of terms in a document for a specific tagger layer.
@@ -10,7 +10,7 @@ import org.ivdnt.galahad.data.layer.Layer
 class DocumentDistribution(
     hypothesis: Layer,
     meta: DocumentMetadata,
-    annotation: AnnotationType
+    annotation: Annotation,
 ) : Distribution(annotation) {
     init {
         totalChars = meta.numChars
