@@ -36,10 +36,10 @@
                     <div v-else>{{ d.item.tagger.tagset }}</div>
                 </template>
 
-                <!-- produces cell -->
-                <template #cell-produces="d">
-                    {{ sort_tagger_produces(d.item.tagger.produces).join(", ") }}
-                    <i v-if="d.item.tagger.produces.length === 0">None</i>
+                <!-- annotations cell -->
+                <template #cell-annotations="d">
+                    {{ sort_tagger_annotations(d.item.tagger.annotations).join(", ") }}
+                    <i v-if="d.item.tagger.annotations.length === 0">None</i>
                 </template>
 
                 <!-- result summary cell -->
@@ -117,7 +117,7 @@ import stores, { DocumentsStore, JobsStore, UserStore, CorporaStore } from '@/st
 // API & types
 import { Job, Progress, SOURCE_LAYER } from '@/types/jobs'
 import { Field } from '@/types/table'
-import { sort_tagger_produces } from "@/stores/taggers"
+import { sort_tagger_annotations } from "@/stores/taggers"
 import { CorpusMetadata } from '@/types/corpora'
 // Components
 import { GButton, GNav, GTable, GInput, GSpinner, JobModal } from '@/components'
@@ -156,7 +156,7 @@ const displayJobs = computed(() =>
         .filter(job => {
             let pass = true
             Object.keys(requireType.value).forEach(key => {
-                if (requireType.value[key] && !(job.tagger.produces.includes(key))) {
+                if (requireType.value[key] && !(job.tagger.annotations.includes(key))) {
                     pass = false
                 }
             }) 
@@ -176,7 +176,7 @@ const columns = computed(() => {
         { key: "id", label: "tagger", sortOn: x => x.tagger.id, textAlign: "left" },
         { key: "language", sortOn: x => x.tagger.language, textAlign: "left" },
         { key: "tagset", sortOn: x => x.tagger.tagset },
-        { key: "produces", label: "type", },
+        { key: "annotations", label: "type", },
         { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },
        // { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
         { key: "lastModified", label: "last modified", sortOn: x => x.lastModified },
@@ -193,7 +193,7 @@ const columns = computed(() => {
 
 const types = computed(() => {
     return Object.values(jobsStore.taggableJobs)
-        .flatMap((x: Job) => x.tagger.produces)
+        .flatMap((x: Job) => x.tagger.annotations)
         .filter((val, ind, arr) => arr.indexOf(val) === ind) // unique values
         .sort()
 })

@@ -29,10 +29,10 @@
             </template>
 
 
-            <!-- produces -->
+            <!-- annotations -->
 
-            <template #cell-produces="d">
-                {{ sort_tagger_produces(d.value).join(", ") }}
+            <template #cell-annotations="d">
+                {{ sort_tagger_annotations(d.value).join(", ") }}
             </template>
 
             <!-- attributions -->
@@ -76,7 +76,7 @@ import stores, { TaggersStore } from "@/stores"
 // Components
 import { MailAddress, GTable, ExternalLink } from "@/components"
 // API & types
-import { sort_tagger_produces } from "@/stores/taggers"
+import { sort_tagger_annotations } from "@/stores/taggers"
 
 // Stores
 const taggerStore = stores.useTaggers() as TaggersStore
@@ -87,7 +87,7 @@ const columns = [
     { key: "language" },
     { key: "description" },
     { key: "tagset" },
-    { key: "produces" },
+    { key: "annotations" },
     { key: "model" },
     { key: "software" },
     { key: "dataset" },
