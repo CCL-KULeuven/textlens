@@ -45,7 +45,7 @@
                 <!-- result summary cell -->
                 <template #cell-resultSummary="d">
                     <!-- <span v-for="key in Object.keys(d.value)" :key="key"><span :key="key" v-if="d.value[key] > 0">{{ key }}: {{ d.value[key] }}, </span></span> -->
-                    {{ d.value.numWordForms }}
+                    {{ d.value.tokens }}
                 </template>
 
                 <!-- era cell -->
@@ -177,7 +177,7 @@ const columns = computed(() => {
         { key: "language", sortOn: x => x.tagger.language, textAlign: "left" },
         { key: "tagset", sortOn: x => x.tagger.tagset },
         { key: "annotations", label: "type", },
-        { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },
+        { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.tokens },
        // { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
         { key: "lastModified", label: "last modified", sortOn: x => x.lastModified },
         { key: "progress", sortOn: x => x.progress.finished / x.progress.total },
