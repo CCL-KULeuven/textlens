@@ -22,5 +22,5 @@ dataset:
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
 trainedBy: "spacy"
 date: "2024-11-12"
-devport: 8120
+devport: 8110
 version: "3.8.2"

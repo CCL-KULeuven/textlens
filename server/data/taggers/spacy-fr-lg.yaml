@@ -22,4 +22,4 @@ dataset:
   href: https://github.com/explosion/spacy-models/releases/tag/fr_core_news_lg-3.8.0
 trainedBy: "spaCy"
 date: "2024-05-30"
-devport: 8122
+devport: 8112
