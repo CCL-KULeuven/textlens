@@ -1,7 +1,6 @@
 package org.ivdnt.galahad.formats.conllu
 
 import org.ivdnt.galahad.annotations.Annotation
-import org.ivdnt.galahad.annotations.AnnotationReader
 import org.ivdnt.galahad.annotations.Layer
 import org.ivdnt.galahad.annotations.Term
 import org.ivdnt.galahad.formats.LineReader
@@ -10,7 +9,7 @@ import java.io.File
 class ConlluReader(
     val file: File
 ) : LineReader() {
-    private val ignorableMultiWordIds: MutableSet<String> = mutableSetOf()
+    private val ignorableMultiWordIds: MutableList<String> = mutableListOf()
 
     private val String.id: String?
         get() = idRegex.find(this)?.groupValues?.get(1) // 0 is the whole match
@@ -77,6 +76,7 @@ class ConlluReader(
     private fun getColumn(annotation: Annotation, fields: List<String>): String? {
         if (annotation == Annotation.UPOS) return getUpos(fields)
         if (annotation == Annotation.NER) return getNER(fields)
+        if (annotation == Annotation.TOKEN) return getColumnRaw(indices[Annotation.TOKEN]!!, fields)
         return getColumn(indices[annotation]!!, fields)
     }
 
@@ -101,8 +101,10 @@ class ConlluReader(
         return nerIOB
     }
 
-    // returns null on _
-    private fun getColumn(i: Int, fields: List<String>): String? = fields.getOrNull(i)?.takeIf { it != "_" }
+    /** returns null on _ */
+    private fun getColumn(i: Int, fields: List<String>): String? = getColumnRaw(i, fields)?.takeIf { it != "_" }
+    /** returns the raw value, even if it is "_" */
+    private fun getColumnRaw(i: Int, fields: List<String>): String? = fields.getOrNull(i)
 
     private fun getUpos(fields: List<String>): String? {
         val head: String = getColumn(3, fields) ?: return null // if no head, ignore features and return
@@ -129,8 +131,7 @@ class ConlluReader(
     companion object {
         /** Supported names for the ner attribute in the MISC column. */
         private val nerAttrNames: List<String> = listOf("NamedEntity", "ner")
-        private val idRegex = Regex("id = (\\S+)")
-
+        private val idRegex = Regex("""id = (\S+)""")
 
         private val indices: Map<Annotation, Int> = mapOf(
             Annotation.TOKEN to 1,
