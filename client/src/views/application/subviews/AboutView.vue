@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang='ts'>
-import { GCard } from '@/components'
+import { GCard} from '@/components'
 </script>
 
 <style scoped="true">

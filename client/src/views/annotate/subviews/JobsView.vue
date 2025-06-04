@@ -1,7 +1,7 @@
 <template>
     <AnnotateTab hideAnnotationsError>
         <GTable :title="`Jobs for corpus ${corporaStore.activeCorpus?.name}`" helpSubject="jobs" :columns
-            :items="displayJobs" :loading="jobsStore.loading" fill hoverRow sortedByField="id" :sortDesc="false"
+            :items="displayJobs" :loading="jobsStore.loading" fill hoverRow sortedByColumn="id" :sortDesc="false"
             class="jobsview">
 
             <template #help>
@@ -29,17 +29,16 @@
                 <div v-else>{{ d.item.tagger.language }}</div>
             </template>
 
-
             <!-- tagset cell -->
             <template #cell-tagset="d">
                 <div v-if="!d.item.tagger.tagset"><i>Unknown</i></div>
                 <div v-else>{{ d.item.tagger.tagset }}</div>
             </template>
 
-            <!-- produces cell -->
-            <template #cell-produces="d">
-                {{ sort_tagger_produces(d.item.tagger.produces).join(", ") }}
-                <i v-if="d.item.tagger.produces.length === 0">None</i>
+            <!-- annotations cell -->
+            <template #cell-annotations="d">
+                {{ sort_tagger_annotations(d.item.tagger.annotations).join(", ") }}
+                <i v-if="d.item.tagger.annotations.length === 0">None</i>
             </template>
 
             <!-- result summary cell -->
@@ -100,10 +99,9 @@
                     </div>
 
                     <div class="table-control">
-                        Require type:
-                        <div v-for="type in types" :key="type" style="white-space: nowrap;">
-                            <GInput type="checkbox" v-model="requireType[type]"> {{ type }}</GInput>
-                        </div>
+                        Require annotation:
+                        <MultiSelect v-model="requireType" :options="types" placeholder="Annotation"
+                            :maxSelectedLabels="5" />
                     </div>
 
                     <div class="table-control slider">
@@ -145,10 +143,12 @@ import stores, { DocumentsStore, JobsStore, UserStore, CorporaStore } from '@/st
 // API & types
 import { Job, Progress, SOURCE_LAYER } from '@/types/jobs'
 import { Field } from '@/types/table'
-import { sort_tagger_produces } from "@/stores/taggers"
+import { sort_tagger_annotations } from "@/stores/taggers"
 // Components
 import { GButton, GNav, GTable, GInput, GSpinner, AnnotateTab, JobModal } from '@/components'
 import help from '@/components/help'
+import MultiSelect from 'primevue/multiselect';
+
 
 // Stores
 const userStore = stores.useUser() as UserStore
@@ -159,7 +159,7 @@ const corporaStore = stores.useCorpora() as CorporaStore
 // Fields
 const taggerNameFilter = ref('')
 const includeTagset = ref({} as { [tagset: string]: boolean })
-const requireType = ref({} as { [type: string]: boolean })
+const requireType = ref([])
 const eraRange = ref([500, 2050])
 const jobId = ref(null as null | string)
 
@@ -181,13 +181,12 @@ const displayJobs = computed(() =>
             return includeTagset.value[job.tagger.tagset]
         })
         .filter(job => {
-            let pass = true
-            Object.keys(requireType.value).forEach(key => {
-                if (requireType.value[key] && !(job.tagger.produces.includes(key))) {
-                    pass = false
+            for (const type of requireType.value) {
+                if (!job.tagger.annotations.includes(type)) {
+                    return false
                 }
-            })
-            return pass
+            }
+            return true
         })
 )
 
@@ -201,11 +200,10 @@ const tagsets = computed(() => {
 const columns = computed(() => {
     const publicFields = [
         { key: "id", label: "tagger", sortOn: x => x.tagger.id, textAlign: "left" },
-        { key: "language", sortOn: x => x.tagger.language, textAlign: "left" },
         { key: "tagset", sortOn: x => x.tagger.tagset },
-        { key: "produces", label: "type", },
+        { key: "annotations", label: "type", },
         { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },
-        { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
+        { key: "era", label: "period", sortOn: x => x.tagger.eraFrom.toString() + x.tagger.eraTo.toString() },
         { key: "lastModified", label: "last modified", sortOn: x => x.lastModified },
         { key: "progress", sortOn: x => x.progress.finished / x.progress.total },
     ] as Field[];
@@ -220,7 +218,7 @@ const columns = computed(() => {
 
 const types = computed(() => {
     return Object.values(jobsStore.taggableJobs)
-        .flatMap((x: Job) => x.tagger.produces)
+        .flatMap((x: Job) => x.tagger.annotations)
         .filter((val, ind, arr) => arr.indexOf(val) === ind) // unique values
         .sort()
 })
@@ -268,7 +266,6 @@ function unixToString(time: number) {
 
 /* Set a width even when there are no results after filtering.*/
 :deep(#prepend) {
-    width: 900px;
     max-width: 100%;
 }
 
@@ -308,6 +305,7 @@ table button {
 :deep(.vue-slider) .vue-slider-dot {
     width: 25px !important;
     height: 25px !important;
+    z-index: 1;
 }
 
 :deep(.vue-slider) .vue-slider-dot-handle {

@@ -1,12 +1,10 @@
 export enum TableCorporaType {
     Dataset = 'benchmark',
-    Public = 'benchmark',
     User = 'user'
 }
 
 export enum TableDocumentsType {
     Dataset = 'dataset',
-    Public = 'public',
     User = 'user'
 }
 
@@ -18,4 +16,10 @@ export type Field = {
     textAlign?: string
     isPrimaryField?: boolean
     hidden?: boolean
+}
+
+export type TableData<T> = {
+    field: Field
+    item: T
+    value: any
 }

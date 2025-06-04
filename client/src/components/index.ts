@@ -2,7 +2,6 @@ import GCard from "./GCard.vue"
 import GInfo from "./GInfo.vue"
 import GSpinner from "./GSpinner.vue"
 import GTabs from "./GTabs.vue"
-import TFooter from "./TFooter.vue"
 import KeyValues from "./KeyValues.vue"
 import AnnotateTab from "./AnnotateTab.vue"
 import EvaluationInfoBox from "./EvaluationInfoBox.vue"
@@ -41,7 +40,6 @@ export {
     KeyValues,
     AnnotateTab,
     EvaluationInfoBox,
-    TFooter,
     // Tables
     GTable,
     DocumentsTable,
@@ -82,7 +80,6 @@ export default {
         app.component("GInfo", GInfo)
         app.component("GSpinner", GSpinner)
         app.component("GTabs", GTabs)
-        app.component("TFooter", TFooter)
         app.component("KeyValues", KeyValues)
         app.component("AnnotateTab", AnnotateTab)
         app.component("EvaluationInfoBox", EvaluationInfoBox)

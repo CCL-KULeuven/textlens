@@ -1,0 +1,21 @@
+id: lettuce-en-xlm
+description: "lettuce_en_xlm"
+tagset: Penn
+eraFrom: "0"
+eraTo: "2024"
+language: "English"
+annotations:
+  - token
+  - pos
+model:
+  name: lettuce_en_xlm
+  href: todo
+software:
+  name: lettuce
+  href: todo
+dataset:
+  name: todo
+  href: todo
+trainedBy: "lettuce"
+date: "2024-05-30"
+devport: 8147

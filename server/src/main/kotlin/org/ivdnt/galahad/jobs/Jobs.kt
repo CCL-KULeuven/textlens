@@ -1,62 +1,60 @@
 package org.ivdnt.galahad.jobs
 
-import org.ivdnt.galahad.BaseFileSystemStore
-import org.ivdnt.galahad.app.NamedCRUDSet
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.data.layer.LayerPreview
-import org.ivdnt.galahad.data.layer.LayerSummary
-import org.ivdnt.galahad.taggers.TaggerStore
+import org.ivdnt.galahad.annotations.LayerPreview
+import org.ivdnt.galahad.annotations.LayerSummary
+import org.ivdnt.galahad.annotations.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.exceptions.JobNotFoundException
+import org.ivdnt.galahad.exceptions.TaggerNotFoundException
+import org.ivdnt.galahad.files.GalahadFolderManager
+import org.ivdnt.galahad.taggers.Tagger
 import java.io.File
 
+/**
+ * Create, read and delete jobs in a corpus.
+ * Represents the "jobs/" folder in a corpus folder.
+ * Usage:
+ * ```
+ * val jobs = corpus.jobs // some existing corpus
+ * val key = "..."
+ *
+ * val job = jobs.createOrThrow(key)
+ * val all = jobs.readAll()
+ *
+ * jobs.deleteOrNull(key)
+ * if (jobs.deleteOrNull(key) == null) { println("Nothing to delete") } // prints
+ * // jobs.deleteOrThrow(key) // throws
+ *
+ * val job2 = jobs.readOrNull(key) // returns null
+ * // val job3 = jobs.readOrThrow(key) // throws
+ * ```
+ */
 class Jobs(
-    workDirectory: File,
+    dir: File,
     private val corpus: Corpus,
-) : BaseFileSystemStore(workDirectory), NamedCRUDSet<String, Job, String> {
+) : GalahadFolderManager<Job, String>(dir) {
+    override fun createOrThrow(key: String): Job {
+        // Throw if the key is not a tagger name (treat source layer as tagger)
+        if (key !in Tagger.taggers && key != SOURCE_LAYER_NAME) throw TaggerNotFoundException(key)
+        // Safe to create it now
+        return ctor(key)
+    }
 
-    private val taggerStore = TaggerStore()
+    override fun ctor(key: String): Job = Job(dir.resolve(key), corpus)
+    override fun throwNotFound(key: String): Nothing = throw JobNotFoundException(key)
 
-    // better be verbose than sorry
-    fun readAllJobStatesIncludingPotentialJobs(): Set<State> {
-        val existingJobs = readAll().map { it.state }
-        val potentialJobs = taggerStore.taggers.map { it.expensiveGet() }.map {
-                State(
-                    it, Progress(pending = corpus.documents.readAll().size), LayerPreview.EMPTY, LayerSummary(), 0
-                )
-            }
-        val sourceJobs = setOf(
-            State(
-                tagger = corpus.sourceTagger.expensiveGet()
+    fun readAllJobStatesIncludingPotentialJobs(): Set<JobMetadata> {
+        val existingJobs = readAll().map { it.metadata }
+        val numDocs = corpus.documents.readAll().size
+        val potentialJobs = Tagger.taggers.values.map {
+            JobMetadata(
+                it, Progress(pending = numDocs), LayerPreview.EMPTY, LayerSummary(0), 0
             )
-        )
-        // the latter overrides the former’s value
-        val jobMap = HashMap<String, State>()
+        }
+        val jobMap = HashMap<String, JobMetadata>()
         potentialJobs.forEach { jobMap[it.tagger.id] = it }
-        sourceJobs.forEach { jobMap[it.tagger.id] = it }
         // Existing jobs take precedence above all, so they are put last.
         existingJobs.forEach { jobMap[it.tagger.id] = it }
         return jobMap.values.toSet()
-    }
-
-    override fun readAll(): Set<Job> =
-        workDirectory.list()?.map { readOrThrow(it) }?.toSet() ?: throw Exception("Could not list jobs")
-
-    override fun createOrNull(key: String): Job? {
-        // accessing the job once creates it and it's directories
-        Job(workDirectory.resolve(key), corpus)
-        return readOrNull(key)
-    }
-
-    override fun readOrNull(key: String): Job? {
-        if (key.isBlank()) throw Exception("Blank job name not allowed") // An empty job name can not be resolved
-        return if (workDirectory.resolve(key).exists()) Job(workDirectory.resolve(key), corpus) else null
-    }
-
-    override fun update(key: String, value: String): Job? {
-        TODO("Not yet implemented")
-    }
-
-    override fun delete(key: String): Job? {
-        workDirectory.resolve(key).deleteRecursively()
-        return readOrNull(key)
     }
 }

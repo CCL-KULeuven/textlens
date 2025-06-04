@@ -248,7 +248,7 @@ input[type=text],
 input[type=url],
 input[type=number],
 input[type=reset] {
-    height: 35px;
+    height: 39px;
     font-size: 1em;
     padding-left: 5px;
     border: 1px solid #ccc;
@@ -312,9 +312,9 @@ div.clear {
 
 select {
     border: 0px solid black;
-    height: 34px;
+    height: 39px;
     max-width: 300px;
-    min-width: 209px;
+    min-width: 200px;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

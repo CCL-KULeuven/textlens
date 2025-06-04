@@ -20,6 +20,9 @@ server/data/corpora/custom
 .gradle
 /build/
 
+# Uploaded data
+server/data/corpora/user/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
@@ -189,6 +192,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+server/gradle/caches/
+server/gradle/kotlin-profile/
+server/gradle/native/
+server/gradle/wrapper/dists/
+server/gradle/daemon/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -301,3 +309,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 scripts/tag-matching/*/*
+server/local.properties

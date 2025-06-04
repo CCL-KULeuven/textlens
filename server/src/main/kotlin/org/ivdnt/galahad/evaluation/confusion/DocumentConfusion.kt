@@ -1,7 +1,8 @@
 package org.ivdnt.galahad.evaluation.confusion
 
-import org.ivdnt.galahad.data.layer.Layer
-import org.ivdnt.galahad.data.layer.Term
+import org.ivdnt.galahad.annotations.Annotation
+import org.ivdnt.galahad.annotations.Layer
+import org.ivdnt.galahad.annotations.Term
 import org.ivdnt.galahad.evaluation.comparison.LayerComparison
 import org.ivdnt.galahad.evaluation.comparison.LayerFilter
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
@@ -9,11 +10,12 @@ import org.ivdnt.galahad.evaluation.comparison.TermComparison
 /**
  * Part of speech confusion of a document for two different tagger layers.
  */
-class DocumentConfusion (
+class DocumentConfusion(
     hypothesis: Layer,
     reference: Layer,
     layerFilter: LayerFilter? = null,
-) : Confusion(truncate = layerFilter == null) {
+    annotation: Annotation = Annotation.POS,
+) : Confusion(truncate = layerFilter == null, annotation) {
 
     init {
         val layerComparison = LayerComparison(
@@ -26,7 +28,7 @@ class DocumentConfusion (
 
         layerComparison.hypothesisTermsWithoutMatches.forEach {
             add(
-                hypoPos = it.posHeadGroup ?: Term.NO_POS,
+                hypoPos = it.annotationHeadOrMissing(annotation),
                 refPos = TermComparison.MISSING_MATCH,
                 sample = TermComparison(hypoTerm = it, refTerm = Term.EMPTY)
             )
@@ -35,7 +37,7 @@ class DocumentConfusion (
         layerComparison.referenceTermsWithoutMatches.forEach {
             add(
                 hypoPos = TermComparison.MISSING_MATCH,
-                refPos = it.posHeadGroup ?: Term.NO_POS,
+                refPos = it.annotationHeadOrMissing(annotation),
                 sample = TermComparison(hypoTerm = Term.EMPTY, refTerm = it)
             )
         }

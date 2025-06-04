@@ -1,0 +1,362 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "@type": "SoftwareSourceCode",
+    "dateCreated": "2025-05-13",
+    "datePublished": "2025-05-13",
+    "applicationCategory": [
+        "https://w3id.org/nwo-research-fields#Linguistics",
+        "https://w3id.org/nwo-research-fields#ComputationalLinguisticsAndPhilology",
+        "https://w3id.org/nwo-research-fields#ArtificialIntelligenceExpertSystems",
+        "https://w3id.org/nwo-research-fields#SoftwareForHumanities",
+        "https://w3id.org/nwo-research-fields#TextualAndLinguisticCorpora",
+        "https://vocabs.dariah.eu/tadirah/enriching",
+        "https://vocabs.dariah.eu/tadirah/posTagging",
+        "https://vocabs.dariah.eu/tadirah/tagging",
+        "https://vocabs.dariah.eu/tadirah/annotating",
+        "https://vocabs.dariah.eu/tadirah/merging",
+        "https://vocabs.dariah.eu/tadirah/converting",
+        "https://vocabs.dariah.eu/tadirah/lemmatizing",
+        "https://vocabs.dariah.eu/tadirah/machineLearning",
+        "https://vocabs.dariah.eu/tadirah/comparing",
+        "https://vocabs.dariah.eu/tadirah/analyzing"
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "@id": "http://orcid.org/0009-0006-9941-9582",
+            "email": "vincent.prins@ivdnt.org",
+            "familyName": "Prins",
+            "givenName": "Vincent"
+        },
+        {
+            "id": "http://orcid.org/0000-0001-9563-9672",
+            "type": "Person",
+            "email": "jonas@ccl.kuleuven.be",
+            "familyName": "Doumen",
+            "givenName": "Jonas"
+        },
+        {
+            "@type": "Person",
+            "familyName": "Brouwer",
+            "givenName": "Tim"
+        }
+    ],
+    "contributor": [
+        "http://orcid.org/0009-0006-9941-9582",
+        {
+            "@type": "Person",
+            "familyName": "Brouwer",
+            "givenName": "Tim"
+        },
+        {
+            "id": "http://orcid.org/0000-0001-9563-9672",
+            "type": "Person",
+            "email": "jonas@ccl.kuleuven.be",
+            "familyName": "Doumen",
+            "givenName": "Jonas"
+        }
+    ],
+    "maintainer": "http://orcid.org/0000-0001-9563-9672",
+    "codeRepository": "git+https://github.com/CCL-KULeuven/textlens.git",
+    "description": "Textlens is an application that enables digital humanties researchers to perform linguistic analysis such as tokenisation, lemmatization and part-of-speech (PoS) tagging using state-of-the art NLP tools through a user-friendly, browser-based interface, without requiring any software installation or configuration.",
+    "downloadUrl": "https://github.com/CCL-KULeuven/textlens",
+    "license": "http://spdx.org/licenses/Apache-2.0",
+    "name": "textlens",
+    "identifier": "textlens",
+    "funding": [
+        {
+            "@type": "Grant",
+            "name": "CLARIAH-VL (FWO grant: I000921N)",
+            "funder": {
+                "@type": "Organization",
+                "name": "FWO",
+                "url": "https://www.fwo.be"
+            }
+        }
+    ],
+    "operatingSystem": "Linux",
+    "programmingLanguage": [
+        "Kotlin",
+        "Javascript",
+        "Typescript"
+    ],
+    "runtimePlatform": [
+        "JVM",
+        "Node"
+    ],
+    "codemeta:contIntegration": {
+        "id": "https://github.com/CCL-KULeuven/textlens/actions"
+    },
+    "continuousIntegration": "https://github.com/CCL-KULeuven/textlens/actions",
+    "developmentStatus": [
+        "https://www.repostatus.org/#active",
+        "https://w3id.org/research-technology-readiness-levels#Level6LatePrototype"
+    ],
+    "producer": {
+        "@type": "Organization",
+        "name": "Centre for Computational Linguistics, KU Leuven",
+        "@id": "https://www.arts.kuleuven.be/ling/ccl",
+        "url": "https://www.arts.kuleuven.be/ling/ccl"
+    },
+    "issueTracker": "https://github.com/CCL-KULeuven/textlens/issues",
+    "readme": "https://github.com/CCL-KULeuven/textlens/blob/release/readme.md",
+    "releaseNotes": "https://github.com/CCL-KULeuven/textlens/releases",
+    "softwareHelp": [
+        {
+            "@id": "https://portal.clarin.ivdnt.org/textlens/help",
+            "@type": "WebSite",
+            "name": "GaLAHaD Help",
+            "url": "https://portal.clarin.ivdnt.org/textlens/help"
+        }
+    ],
+    "targetProduct": [
+        {
+            "@type": "WebApplication",
+            "name": "textlens",
+            "provider": "https://www.ivdnt.org",
+            "url": "https://portal.clarin.ivdnt.org/textlens"
+        },
+        {
+            "@type": "WebAPI",
+            "name": "GaLAHaD API",
+            "provider": "https://www.ivdnt.org",
+            "endpointUrl": {
+                "@type": "EntryPoint",
+                "url": "https://portal.clarin.ivdnt.org/textlens/api",
+                "contentType": "application/json"
+            },
+            "endpointDescription": {
+                "@type": "CreativeWork",
+                "encodingFormat": "application/json",
+                "url": "https://portal.clarin.ivdnt.org/textlens/api/v3/api-docs"
+            },
+            "documentation": "https://portal.clarin.ivdnt.org/textlens/api/swagger-ui/index.html",
+            "consumesData": [
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "text/plain"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "application/folia+xml"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "application/tei+xml"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "text/tab-separated-values"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "https://github.com/newsreader/NAF"
+                },
+                {
+                    "@type": "TextDigitalDocument",
+                    "encodingFormat": "https://universaldependencies.org/format.html"
+                }
+            ],
+            "producesData": [
+                {
+                    "@type": "CreativeWork",
+                    "encodingFormat": "application/zip"
+                }
+            ]
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD client Docker image"
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD server Docker image"
+        },
+        {
+            "@type": "SoftwareImage",
+            "name": "GaLAHaD proxy Docker image"
+        }
+    ],
+    "softwareRequirements": [
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@primevue/themes",
+            "name": "@primevue/themes"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/uuid",
+            "name": "@types/uuid"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@vitejs/plugin-vue",
+            "name": "@vitejs/plugin-vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "axios",
+            "name": "axios"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "buffer",
+            "name": "buffer"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "content-disposition",
+            "name": "content-disposition"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "js-yaml",
+            "name": "js-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "json-loader",
+            "name": "json-loader"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "pinia",
+            "name": "pinia"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "primevue",
+            "name": "primevue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "safe-buffer",
+            "name": "safe-buffer"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "uuid",
+            "name": "uuid"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue",
+            "name": "vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue-router",
+            "name": "vue-router"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vue-slider-component",
+            "name": "vue-slider-component"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@rollup/plugin-yaml",
+            "name": "@rollup/plugin-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/jest",
+            "name": "@types/jest"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@types/js-yaml",
+            "name": "@types/js-yaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@typescript-eslint/eslint-plugin",
+            "name": "@typescript-eslint/eslint-plugin"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@typescript-eslint/parser",
+            "name": "@typescript-eslint/parser"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "@vue/eslint-config-typescript",
+            "name": "@vue/eslint-config-typescript"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "eslint",
+            "name": "eslint"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "eslint-plugin-vue",
+            "name": "eslint-plugin-vue"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "mutationobserver-shim",
+            "name": "mutationobserver-shim"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "sass",
+            "name": "sass"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "typescript",
+            "name": "typescript"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "vite",
+            "name": "vite"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-starter-web",
+            "name": "spring-boot-starter-web"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-devtools",
+            "name": "spring-boot-devtools"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springframework.boot.spring-boot-starter-test",
+            "name": "spring-boot-starter-test"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.jetbrains.kotlin.kotlin-reflect",
+            "name": "kotlin-reflect"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
+            "name": "kotlinx-coroutines-core-jvm"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.springdoc.springdoc-openapi-starter-webmvc-ui",
+            "name": "springdoc-openapi-starter-webmvc-ui"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.apache.logging.log4j.log4j-api-kotlin",
+            "name": "log4j-api-kotlin"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "org.yaml.snakeyaml",
+            "name": "snakeyaml"
+        },
+        {
+            "@type": "SoftwareApplication",
+            "identifier": "com.beust.klaxon",
+            "name": "klaxon"
+        }
+    ]
+}

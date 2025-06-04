@@ -1,6 +1,6 @@
 package org.ivdnt.galahad.evaluation.distribution
 
-import org.ivdnt.galahad.port.csv.CSVFile
+import org.ivdnt.galahad.export.csv.CSVFile
 
 class LiteralsEntry(
     val literals: Map<String, Int>,
@@ -21,15 +21,11 @@ class DistributionRow(
     val lemma: String,
     val pos: String,
     val count: Int,
-    val literals: LiteralsEntry,
+    private val literals: LiteralsEntry,
 ) {
-    fun toCSVRecord(): String {
-        return CSVFile.toCSVRecord(listOf(lemma, pos, count.toString(), literals.literals.toString()))
-    }
+    fun toCSVRecord(): String = CSVFile.toCSVRecord(listOf(lemma, pos, count.toString(), literals.literals.toString()))
 
     companion object {
-        fun getCsvHeader(): String {
-            return CSVFile.toCSVHeader(listOf("lemma", "pos", "count", "literals"))
-        }
+        fun getCsvHeader(): String = CSVFile.toCSVHeader(listOf("lemma", "pos", "count", "literals"))
     }
 }

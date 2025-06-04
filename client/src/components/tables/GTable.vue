@@ -1,5 +1,5 @@
 <template>
-    <GCard :showHelp="showHelp" :headless="headless" :helpSubject="helpSubject">
+    <GCard :showHelp="showHelp" :headless="headless" :helpSubject="helpSubject" :noHelp>
         <template #title>
             <slot name="title">{{ title }}</slot>
         </template>
@@ -14,7 +14,7 @@
         <template #header>
             <slot name="header"></slot>
         </template>
-        <div id="prepend">
+        <div id="prepend" v-if="$slots.prepend">
             <slot name="prepend"></slot>
         </div>
 
@@ -22,7 +22,7 @@
             Here should be an instruction how to fill the content.
         </slot>
         <table :class="`${cssClass} ${loading ? ' loading' : ''} ${selectable ? ' selectable' : ''}`">
-            <thead v-if="!(isEmpty && !displayOnEmpty)">
+            <thead v-if="!(isEmpty)">
                 <tr>
                     <th v-for="field in visibleFields" :key="field.key" style="text-align: center;">
                         <div style="white-space: pre-line">
@@ -133,13 +133,14 @@ export default defineComponent({
         headless: { type: Boolean, default: false },
         loading: { type: Boolean, default: false },
         selectable: { type: Boolean, default: false },
-        sortedByField: { type: String, default: null },
+        sortedByColumn: { type: String, default: null },
         sortDesc: { type: Boolean, default: true },
         compact: { type: Boolean, default: false },
         showHelp: { type: Boolean, default: false },
         items: { type: Array as PropType<Item[]>, default() { return [] } },
         modelValue: { type: Object as PropType<Item>, default: null }, // use in conjunction with 'selectable' to make a v-model
-        helpSubject: { type: String as () => keyof typeof help }
+        helpSubject: { type: String as () => keyof typeof help },
+        noHelp: { type: Boolean, default: false }
     },
     //   model: {
     //       prop: 'value',
@@ -149,7 +150,7 @@ export default defineComponent({
         return {
             page: 1,
             sortIsDesc: this.sortDesc as boolean,
-            sortedBy: this.sortedByField as null | string
+            sortedBy: this.sortedByColumn as null | string
         }
     },
     computed: {
@@ -374,7 +375,7 @@ table.loading .loading-symbol {
 table .loading-symbol {
     transition: opacity 2s ease, visibility 2s ease;
     opacity: 0;
-    z-index: 3;
+    z-index: 1;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -383,10 +384,9 @@ table .loading-symbol {
 }
 
 table {
-    display: block;
     border-collapse: collapse;
-    margin: 0;
-    margin-top: 5px;
+    margin: 0 auto;
+    // margin-top: 5px;
     padding: 0;
 
     caption {
@@ -436,7 +436,7 @@ table.compact {
         padding: .1em 2em;
     }
 
-    margin: 0;
+    margin: 0 auto;
 }
 
 table.selectable {

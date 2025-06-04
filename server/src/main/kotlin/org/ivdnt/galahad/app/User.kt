@@ -3,49 +3,30 @@ package org.ivdnt.galahad.app
 import jakarta.servlet.http.HttpServletRequest
 import java.io.File
 
-val adminFile = File("data/admins/admins.txt")
-fun isAdmin(string: String): Boolean {
-    if (!adminFile.exists()) return false // When no admins are set, no one is admin by default
-    return adminFile.readLines().map { it.trim() }.contains(string) // Otherwise only declared admins are admins
-}
-
 class User(
     val id: String,
     val isAdmin: Boolean = false,
 ) {
-
     companion object {
+        private const val USERNAME: String = "user"
+        private val ADMIN_FILE: File = File("data/admins/admins.txt")
+        val DEFAULT_USER: User get() = User(id = USERNAME, isAdmin = isAdmin(USERNAME))
 
-        fun getUserFromRequestOrThrow(request: HttpServletRequest?): User {
-            if (request == null) throw Exception("Request object is null")
+        private fun isAdmin(username: String): Boolean {
+            if (!ADMIN_FILE.exists()) return false // When no admins are set, no one is admin by default
+            return username in ADMIN_FILE.readLines().map { it.trim() } // Otherwise only declared admins are admins
+        }
 
-            if (application_profile.contains("dev")) {
-                // DEV: for sake of running unit tests in dev too, we still check the header
-                return try {
-                    val remoteUser = request.getHeader("remote_user")
-                    User(id = remoteUser, isAdmin = isAdmin(remoteUser))
-                } catch (e: Exception) {
-                     User(id = "you", isAdmin = isAdmin("you"))
-                }
-            }
-
-            // PROD
+        fun fromRequest(request: HttpServletRequest?): User {
             return try {
                 // This is the header used by the portal. We cannot spoof it
-                val remoteUser = request.getHeader("remote_user")
+                val remoteUser = request!!.getHeader("remote_user")
                 User(id = remoteUser, isAdmin = isAdmin(remoteUser))
-            } catch (npe: java.lang.NullPointerException) {
-                // java.lang.NullPointerException: remote_user must not be null
+            } catch (_: Exception) {
                 // happens when the application is run in prod mode, but without the portal
                 // In this case we default to a single user instance
                 // Note that admin status is not set here
-                User(id = "you", isAdmin = isAdmin("you"))
-            } catch (ise: java.lang.IllegalStateException) {
-                // java.lang.IllegalStateException: remote_user
-                // happens when running with the proxy, but without the portal
-                // TODO: figure this out. What to do with the proxy in both the portal and non-portal case?
-                // probably we should not grant the user access here
-                User(id = "you", isAdmin = isAdmin("you"))
+                DEFAULT_USER
             }
         }
     }

@@ -19,6 +19,7 @@ const props = defineProps({
     red: {type: Boolean},
     orange: {type: Boolean},
     green: {type: Boolean},
+    yellow: {type: Boolean},
     plain: {type: Boolean},
     title: { type: String, default: "" },
     showTitle: { type: Boolean, default: false}
@@ -28,6 +29,7 @@ const cssClass = computed(() => {
         red: props.red,
         orange: props.orange,
         green: props.green,
+        yellow: props.yellow,
         plain: props.plain,
         disabled: props.disabled,
     }
@@ -49,8 +51,7 @@ button {
     width: max-content;
     margin: 0px 2px;
     cursor: pointer;
-    line-height: 1.2em;
-    display: inline-flex;
+    min-width: 39px;
     gap: 5px;
 
     // Align holy grail.
@@ -77,6 +78,10 @@ button {
         background-color: var(--textlens-green);
     }
 
+    &.yellow {
+        background-color: var(--textlens-yellow);
+    }
+
     &.red {
         background-color: var(--int-red);
     }
@@ -99,6 +104,10 @@ button {
                 background-color: var(--textlens-green-hover);
             }
 
+            &.yellow {
+                background-color: var(--textlens-yellow-hover);
+            }
+
             &.red {
                 background-color: var(--int-red-hover);
             }
@@ -117,6 +126,10 @@ button {
 
             &.green {
                 background-color: var(--textlens-green-active);
+            }
+
+            &.yellow {
+                background-color: var(--textlens-yellow-active);
             }
 
             &.red {

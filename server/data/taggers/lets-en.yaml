@@ -1,0 +1,23 @@
+id: lets-en
+description: "LeTs"
+tagset: UNK
+eraFrom: "0"
+eraTo: "2024"
+language: "English"
+annotations:
+  - token
+  - lemma
+  - pos
+  - ner
+model:
+  name: LeTs
+  href: https://lt3.ugent.be/resources/lets/
+software:
+  name: LeTs
+  href: https://lt3.ugent.be/resources/lets/
+dataset:
+  name: todo
+  href: https://lt3.ugent.be/resources/lets/
+trainedBy: "LT3"
+date: "2024-05-30"
+devport: 8133

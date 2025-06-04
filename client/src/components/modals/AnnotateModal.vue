@@ -36,16 +36,16 @@
                     <div v-else>{{ d.item.tagger.tagset }}</div>
                 </template>
 
-                <!-- produces cell -->
-                <template #cell-produces="d">
-                    {{ sort_tagger_produces(d.item.tagger.produces).join(", ") }}
-                    <i v-if="d.item.tagger.produces.length === 0">None</i>
+                <!-- annotations cell -->
+                <template #cell-annotations="d">
+                    {{ sort_tagger_annotations(d.item.tagger.annotations).join(", ") }}
+                    <i v-if="d.item.tagger.annotations.length === 0">None</i>
                 </template>
 
                 <!-- result summary cell -->
                 <template #cell-resultSummary="d">
                     <!-- <span v-for="key in Object.keys(d.value)" :key="key"><span :key="key" v-if="d.value[key] > 0">{{ key }}: {{ d.value[key] }}, </span></span> -->
-                    {{ d.value.numWordForms }}
+                    {{ d.value.tokens }}
                 </template>
 
                 <!-- era cell -->
@@ -79,19 +79,19 @@
                     <GNav v-if="!corporaStore.hasDocs" :route="{ path: '/annotate/data/documents' }">
                         Upload documents to start job
                     </GNav>
-                    <GButton v-else @click="jobId = d.item.tagger.id"> View &amp; Tag
+                    <GButton yellow v-else @click="jobId = d.item.tagger.id"> <i class="fa fa-code"></i>Tag
                     </GButton>
                 </template>
 
                 <template #prepend>
 
-                    <div class="table-controls">
+                    <!-- <div class="table-controls">
 
                         <div class="table-control">
                             Search tagger name:
                             <GInput type="text" v-model="taggerNameFilter" placeholder="Tagger name" clearBtn></GInput>
                         </div>
-                    </div>
+                    </div> -->
                     <p>
                         Showing <b>{{ displayJobs.length }}</b> applicable {{ displayJobs.length == 1 ? ' tagger' : ' taggers' }}.
                     </p>
@@ -117,7 +117,7 @@ import stores, { DocumentsStore, JobsStore, UserStore, CorporaStore } from '@/st
 // API & types
 import { Job, Progress, SOURCE_LAYER } from '@/types/jobs'
 import { Field } from '@/types/table'
-import { sort_tagger_produces } from "@/stores/taggers"
+import { sort_tagger_annotations } from "@/stores/taggers"
 import { CorpusMetadata } from '@/types/corpora'
 // Components
 import { GButton, GNav, GTable, GInput, GSpinner, JobModal } from '@/components'
@@ -156,7 +156,7 @@ const displayJobs = computed(() =>
         .filter(job => {
             let pass = true
             Object.keys(requireType.value).forEach(key => {
-                if (requireType.value[key] && !(job.tagger.produces.includes(key))) {
+                if (requireType.value[key] && !(job.tagger.annotations.includes(key))) {
                     pass = false
                 }
             }) 
@@ -176,9 +176,9 @@ const columns = computed(() => {
         { key: "id", label: "tagger", sortOn: x => x.tagger.id, textAlign: "left" },
         { key: "language", sortOn: x => x.tagger.language, textAlign: "left" },
         { key: "tagset", sortOn: x => x.tagger.tagset },
-        { key: "produces", label: "type", },
-        { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.numWordForms },
-        { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
+        { key: "annotations", label: "type", },
+        { key: "resultSummary", label: "tokens", sortOn: x => x.resultSummary.tokens },
+       // { key: "era", label: "period", sortOn: x => x.tagger.eraFrom },
         { key: "lastModified", label: "last modified", sortOn: x => x.lastModified },
         { key: "progress", sortOn: x => x.progress.finished / x.progress.total },
     ] as Field[];
@@ -193,7 +193,7 @@ const columns = computed(() => {
 
 const types = computed(() => {
     return Object.values(jobsStore.taggableJobs)
-        .flatMap((x: Job) => x.tagger.produces)
+        .flatMap((x: Job) => x.tagger.annotations)
         .filter((val, ind, arr) => arr.indexOf(val) === ind) // unique values
         .sort()
 })

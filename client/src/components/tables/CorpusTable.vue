@@ -74,12 +74,12 @@
                     <i class="fa fa-file-text"></i>    
                 </GButton>
                 
-                <GButton white title="Annotate data" :disabled="!corpusHasDocs(data.item)" @click="$emit('annotate', data.item)">
+                <GButton yellow title="Annotate data" :disabled="!corpusHasDocs(data.item)" @click="$emit('annotate', data.item)">
                     <i v-if="data.item.activeJobs > 0" class="fa fa-code fa-spin"></i>
                     <i v-else class="fa fa-code"></i>
                 </GButton>
 
-                <GButton white title="Export results" :disabled="!corpusHasResults(data.item)" @click="$emit('export', data.item)">
+                <GButton yellow title="Export results" :disabled="!corpusHasResults(data.item)" @click="$emit('export', data.item)">
                     <i class="fa fa-download"></i>
                 </GButton>
 
@@ -148,7 +148,7 @@ const columns: Field[] = [
     { key: 'sizeInBytes', label: "size", sortOn: x => x.sizeInBytes },
     { key: "eraFrom", sortOn: x => x.eraFrom, label: "year from", hidden: true },
     { key: "eraTo", sortOn: x => x.eraTo, label: "year to", hidden: true },
-    { key: "tagset", sortOn: x => x.tagset },
+  //  { key: "tagset", sortOn: x => x.tagset },
     { key: "source", label: "source", sortOn: x => x.source, hidden: true  },
     { key: "lastModified", sortOn: x => x.lastModified, label: "last modified", hidden: true  },
     { key: "collaborators", hidden: !editable, sortOn: x => customSharedSort(x), label: "shared with" },

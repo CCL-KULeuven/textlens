@@ -1,12 +1,12 @@
 package org.ivdnt.galahad.evaluation.metrics
 
-import jakarta.servlet.GenericFilter
-import org.ivdnt.galahad.TestConfig
-import org.ivdnt.galahad.data.corpus.Corpus
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.annotations.Annotation
 import org.ivdnt.galahad.evaluation.EvaluationUtil
+import org.ivdnt.galahad.evaluation.comparison.HeadGroupTermFilter
 import org.ivdnt.galahad.evaluation.comparison.MetricsLayerFilter
-import org.ivdnt.galahad.evaluation.comparison.PosLemmaTermFilter
-import org.ivdnt.galahad.port.createCorpus
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.util.TestUtil
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,7 +16,7 @@ class CorpusMetricsTest {
 
     @BeforeEach
     fun initCorpus() {
-        corpus = createCorpus()
+        corpus = TestUtil.createCorpus()
     }
 
     @Test
@@ -54,7 +54,7 @@ class CorpusMetricsTest {
         EvaluationUtil.add_two_docs_to_corpus(corpus)
         EvaluationUtil.addDocWithMatchingMultiPosLemma(corpus)
 
-        val termFilter = PosLemmaTermFilter(posHeadGroup = "PD+NOU-C", lemma = null)
+        val termFilter = HeadGroupTermFilter(Annotation.POS, "PD+NOU-C")
         val filter = MetricsLayerFilter(termFilter,termFilter)
         val filteredMetrics = CorpusMetrics(corpus, listOf(PosByPosMetricsSettings()), TestConfig.TAGGER_NAME, layerFilter = filter)
         val filteredGlobal = filteredMetrics.metricTypes.values.first()

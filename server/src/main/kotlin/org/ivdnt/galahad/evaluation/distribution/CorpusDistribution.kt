@@ -1,8 +1,11 @@
 package org.ivdnt.galahad.evaluation.distribution
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.annotations.Annotation
+import org.ivdnt.galahad.annotations.SOURCE_LAYER_NAME
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.util.ThreadPoolUtil
+import java.util.concurrent.ExecutorCompletionService
 
 /**
  * The frequency distribution of terms in a corpus for a specific tagger layer.
@@ -11,23 +14,28 @@ import org.ivdnt.galahad.data.document.SOURCE_LAYER_NAME
 class CorpusDistribution(
     corpus: Corpus,
     hypothesis: String = SOURCE_LAYER_NAME,
-) : Distribution() {
+    groupingAnnotation: Annotation,
+) : Distribution(groupingAnnotation) {
 
-    private val hypothesisJob = corpus.jobs.readOrNull(hypothesis) ?: throw Exception("Hypothesis layer does not exist")
-
-    @JsonProperty
-    val lastModified = hypothesisJob.lastModified
+    private val hypothesisJob = corpus.jobs.readOrThrow(hypothesis)
 
     @JsonProperty
-    val generated = System.currentTimeMillis()
+    val lastModified: Long = hypothesisJob.lastModified
+
+    @JsonProperty
+    val generated: Long = System.currentTimeMillis()
 
     init {
-        corpus.documents.readAll().forEach {
-            val meta = it.metadata.expensiveGet()
-            val documentJob = hypothesisJob.document(meta.name)
-            // Add to ourselves
-            this.add(DocumentDistribution(documentJob.result, meta))
+        val completionService = ExecutorCompletionService<DocumentDistribution>(ThreadPoolUtil.pool)
+
+        val allDocs = corpus.documents.readAll()
+        allDocs.forEach { doc ->
+            completionService.submit {
+                DocumentDistribution(hypothesisJob.getLayer(doc), doc.metadata, groupingAnnotation)
+            }
         }
+
+        for (i in 0..<allDocs.size) add(completionService.take().get())
     }
 }
 

@@ -34,6 +34,8 @@
             <a href="/galahad/application" target="_blank">About</a>
             <a href="/galahad/contribute" target="_blank">Contribute</a>
             <a href="http://lancelot.ivdnt.org" target="_blank">Lancelot</a>-->
+            <a href="https://portal.clarin.ivdnt.org/galahad" target="_blank">GaLAHaD</a>
+            <a href="https://portal.clarin.ivdnt.org/lancelot" target="_blank">Lancelot</a>
         </template>
 
     </GTabs>
@@ -53,7 +55,7 @@
 import { onMounted, ref } from 'vue'
 import stores, { AppStore, UserStore } from '@/stores'
 // Components
-import { GInfo, GModal, GTabs, MailAddress, TFooter} from '@/components'
+import { GInfo, GModal, GTabs, MailAddress} from '@/components'
 
 // Stores
 const app = stores.useApp() as AppStore
@@ -94,6 +96,10 @@ $textlens-dark-green: #007F73;
     --int-yellow-hover: #FFEB33;
     --int-yellow-active: #d5c000;
     --int-yellow-outline: #ffe100; // custom; a bit darker than huisstijl yellow-outline
+    // textlens yellow
+    --textlens-yellow: #eae0d7;
+    --textlens-yellow-hover: #f1ebe4;
+    --textlens-yellow-active: #e3d7c9;
     // red
     --int-red: #E8503D;
     --int-red-hover: #dd442f; // custom

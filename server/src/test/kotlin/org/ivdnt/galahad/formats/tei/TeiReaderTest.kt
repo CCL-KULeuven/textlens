@@ -1,0 +1,67 @@
+package org.ivdnt.galahad.formats.tei
+
+import org.ivdnt.galahad.util.TestUtil
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+
+internal class TeiReaderTest {
+    @Nested
+    inner class TEIP5Test {
+        @Test
+        fun `Multiple text elements`() {
+            val teiFile = TeiFile(TestUtil.get("formats/tei/dummies/multipletextelements.xml"))
+            assertEquals("text1\ntext2 text3", teiFile.plaintext.trim())
+        }
+
+        @Test
+        fun `Simple word tags in one paragraph`() {
+            val teiFile = TeiFile(TestUtil.get("formats/tei/dummies/withwtags.xml"))
+            assertEquals("word1 word2", teiFile.plaintext.trim())
+        }
+
+        @Test
+        fun `Simple word tags in two paragraph`() {
+            val teiFile = TeiFile(TestUtil.get("formats/tei/dummies/wandp.xml"))
+            assertEquals("word1 word2\n\nword3 word4", teiFile.plaintext.trim())
+        }
+
+        @Test
+        fun `Import highly intertwined tags`() {
+            val file = TeiFile(TestUtil.get("formats/tei/twine/twine.input.xml"))
+            TestUtil.assertPlaintextAndSourcelayer("tei/twine", file)
+        }
+
+        @Test
+        fun `Import huygens brieven TEI`() {
+            val file = TeiFile(TestUtil.get("formats/tei/brieven/input.tei.xml"))
+            // Has no source layer
+            TestUtil.assertPlainText("tei/brieven", file)
+        }
+
+        @Test
+        fun `Import TEI with w-tags without spaces in between`() {
+            val file = TeiFile(TestUtil.get("formats/tei/nospaces/input.tei.xml"))
+            assertEquals("a a a", file.plaintext.trim())
+
+        }
+    }
+
+    @Nested
+    inner class TEIP4Test {
+        @Test
+        fun `Import TEI P4`() {
+            val file = TeiFile(TestUtil.get("formats/tei/legacy/teip4/input.tei.xml"))
+            TestUtil.assertPlaintextAndSourcelayer("tei/legacy/teip4", file)
+        }
+    }
+
+    @Nested
+    inner class TEIP5LegacyTest {
+        @Test
+        fun `Import TEI P5`() {
+            val file = TeiFile(TestUtil.get("formats/tei/legacy/teip5/input.tei.xml"))
+            TestUtil.assertPlaintextAndSourcelayer("tei/legacy/teip5", file)
+        }
+    }
+}

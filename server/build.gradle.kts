@@ -1,78 +1,57 @@
-import org.jetbrains.dokka.DokkaConfiguration.Visibility
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-	id("org.springframework.boot") version "3.2.3"
-	id("io.spring.dependency-management") version "1.1.4"
-	id("org.jetbrains.dokka") version "1.9.10"
-	kotlin("jvm") version "1.9.22"
-	kotlin("plugin.spring") version "1.9.22"
-	kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "2.1.20"
+    kotlin("plugin.spring") version "2.1.20"
+    id("org.springframework.boot") version "3.4.2"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "org.ivdnt"
-version = "0.0.2-ALPHA-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
-java.targetCompatibility = JavaVersion.VERSION_17
+
+kotlin {
+    jvmToolchain(21)
+}
 
 repositories {
-	mavenCentral()
-	gradlePluginPortal()
+    mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
-	// Spring
-	implementation("org.springframework.boot:spring-boot-starter-web:3.2.4")
-	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools
-	implementation("org.springframework.boot:spring-boot-devtools:3.2.3")
+    // Spring
+    // Versions controlled by Spring Boot plugin
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-devtools")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-	// kotlin
-	implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
-	// https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
-	implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") // JVM dependency
+    // kotlin
+    // Versions controlled by Kotlin jvm plugin
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
-	// swagger
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+    // swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
 
+    // logging
+    implementation("org.apache.logging.log4j:log4j-api-kotlin:1.5.0")
 
-	implementation("com.beust:klaxon:5.6")
-	implementation("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
+    // yaml
+    implementation("org.yaml:snakeyaml:2.4")
 
-	// yaml
-	// https://mvnrepository.com/artifact/org.yaml/snakeyaml
-	implementation("org.yaml:snakeyaml:2.2")
+    // json
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-	// Tests
-	testImplementation ("org.springframework.boot:spring-boot-starter-test:3.2.3")
-}
+    // xml
+    implementation("com.fasterxml:aalto-xml:1.3.3")
 
-tasks.test {
-	environment(mapOf("profile" to "dev"))
-	useJUnitPlatform()
+    // cache
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.0")
+
+    // immutable arrays
+    // implementation("com.danrusu.pods4k:pods4k:0.7.0")
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
-	// https://stackoverflow.com/questions/52733942/increase-heap-memory-for-gradle-test
-//	minHeapSize = "4096m"
-//	maxHeapSize = "4096m"
-//	jvmArgs = listOf("-XX:MaxPermSize=1024m") // fails on some IDEs
-}
-
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs = listOf("-Xjsr305=strict")
-		jvmTarget = "17"
-	}
-}
-
-tasks.withType<DokkaTask>().configureEach {
-	dokkaSourceSets {
-		configureEach {
-			documentedVisibilities.set(setOf(Visibility.PUBLIC, Visibility.PROTECTED, Visibility.PRIVATE, Visibility.INTERNAL))
-		}
-	}
+    environment(mapOf("profile" to "dev"))
+    systemProperty("line.separator", "\n")
+    useJUnitPlatform()
 }

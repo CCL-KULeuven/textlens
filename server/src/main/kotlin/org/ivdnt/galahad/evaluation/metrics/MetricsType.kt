@@ -1,14 +1,31 @@
 package org.ivdnt.galahad.evaluation.metrics
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.ivdnt.galahad.data.layer.Term
+import org.ivdnt.galahad.annotations.Term
 import org.ivdnt.galahad.evaluation.CsvSampleExporter
 import org.ivdnt.galahad.evaluation.EvaluationEntry
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
-import org.ivdnt.galahad.port.csv.CSVFile
+import org.ivdnt.galahad.exceptions.InvalidClassificationTypeException
+import org.ivdnt.galahad.export.csv.CSVFile
+import org.ivdnt.galahad.taggers.Tagger
 import org.ivdnt.galahad.util.toFixed
 
+enum class ClassificationType(val value: String) {
+    TRUE_POSITIVE("truePositive"),
+    FALSE_POSITIVE("falsePositive"),
+    FALSE_NEGATIVE("falseNegative"),
+    NO_MATCH("noMatch");
+
+    companion object {
+        fun fromString(s: String): ClassificationType =
+            entries.firstOrNull { it.value == s } ?: throw InvalidClassificationTypeException(
+                "Invalid value $s, valid values are ${entries.map { it.value }}"
+            )
+    }
+}
+
 typealias FlatMetricTypeAssay = Map<String, FlatMetricType>
+
 class FlatMetricType(
     val micro: ClassificationMetrics = ClassificationMetrics(),
     val macro: ClassificationMetrics = ClassificationMetrics(),
@@ -16,7 +33,9 @@ class FlatMetricType(
 
 class MetricsType(
     val setting: MetricsSettings,
-    @JsonIgnore var truncate: Boolean = true
+    val hypothesis: Tagger,
+    val reference: Tagger,
+    @JsonIgnore var truncate: Boolean = true,
 ) : CsvSampleExporter {
     @JsonIgnore
     var map: MutableMap<String, Metric> = HashMap()
@@ -27,15 +46,16 @@ class MetricsType(
             return if (map.size > TRUNCATE) {
                 // sort mt.value.map on mt.value.map["someKey"].cls.classCount, take the first TRUNCATE elements, and then map
                 map.entries.asSequence()
-                        .sortedByDescending { it.value.cls.classCount }.take(TRUNCATE)
-                        .associateBy({ it.key }, { it.value }).values.toSet()
+                    .sortedByDescending { it.value.cls.classCount }.take(TRUNCATE)
+                    .associateBy({ it.key }, { it.value }).values.toSet()
             } else {
                 map.values.toSet()
             }
         }
 
     val classes: ClassificationClasses
-        get() = map.values.map { it.cls }.toMutableList().apply{ this.add(0, ClassificationClasses(count=0)) }.reduce { a, b -> a.add(b, truncate) }.apply { falsePositive = EvaluationEntry() }
+        get() = map.values.map { it.cls }.toMutableList().apply { this.add(0, ClassificationClasses(count = 0)) }
+            .reduce { a, b -> a.add(b, truncate) }.apply { falsePositive = EvaluationEntry() }
 
     val macro: ClassificationMetrics
         get() {
@@ -50,7 +70,10 @@ class MetricsType(
             if (map.isEmpty()) {
                 return ClassificationMetrics()
             }
-            return ClassificationMetrics.calculate(map.values.map { it.cls.flat }.reduce { a, b -> a + b }, micro = true)
+            return ClassificationMetrics.calculate(
+                map.values.map { it.cls.flat }.reduce { a, b -> a + b },
+                micro = true
+            )
         }
 
     fun toGlobalCsv(): String {
@@ -58,27 +81,27 @@ class MetricsType(
         val microMetrics = micro
         val macroMetrics = macro
 
-        return CSVFile.toCSVRecord(listOf(
-            setting.annotation,
-            setting.group,
-            macroMetrics.precision.toFixed(),
-            macroMetrics.recall.toFixed(),
-            macroMetrics.f1.toFixed(),
-            microMetrics.accuracy.toFixed(),
-            classes.classCount,
-            classes.truePositive.count,
-            classes.falseNegative.count,
-            classes.noMatch.count,
-        ))
+        return CSVFile.toCSVRecord(
+            listOf(
+                setting.annotation,
+                setting.group,
+                macroMetrics.precision.toFixed(),
+                macroMetrics.recall.toFixed(),
+                macroMetrics.f1.toFixed(),
+                microMetrics.accuracy.toFixed(),
+                classes.classCount,
+                classes.truePositive.count,
+                classes.falseNegative.count,
+                classes.noMatch.count,
+            )
+        )
     }
 
-    fun toFlat(): FlatMetricType {
-        return FlatMetricType(micro, macro)
-    }
+    fun toFlat(): FlatMetricType = FlatMetricType(micro, macro)
 
     fun toGroupedCsv(): String {
         var csv = Metric.getCsvHeader()
-        grouped.sortedBy { it.name }.forEach{ csv += it.toCSVRecord() }
+        grouped.sortedBy { it.name }.forEach { csv += it.toCSVRecord() }
         return csv
     }
 
@@ -96,8 +119,9 @@ class MetricsType(
             return
         }
 
+        // no match
         if (comp.hypoTerm == Term.EMPTY) {
-            add (
+            add(
                 Metric(
                     name = setting.groupBy(comp.refTerm),
                     cls = ClassificationClasses(
@@ -106,6 +130,7 @@ class MetricsType(
                     )
                 )
             )
+            return // don't show no matches in false positives / true negatives.
         }
 
         // One of these two will be empty, we don't know which.
@@ -120,7 +145,7 @@ class MetricsType(
                 cls = cls
             )
         )
-        if (falses.count != 0) {
+        if (falses.count != 0 && setting.hasFalsePositive) {
             // This term is also be someone else's false positive, so switch around.
             val cls2 = ClassificationClasses(
                 falsePositive = EvaluationEntry(count = falses.samples.size, falses.samples.toMutableList()),
@@ -135,7 +160,10 @@ class MetricsType(
         }
     }
 
-    private fun truesFalses(comp: TermComparison, cond: (TermComparison) -> Boolean): Pair<EvaluationEntry, EvaluationEntry> {
+    private fun truesFalses(
+        comp: TermComparison,
+        cond: (TermComparison) -> Boolean,
+    ): Pair<EvaluationEntry, EvaluationEntry> {
         val trues = if (cond(comp)) {
             EvaluationEntry(1, mutableListOf(comp))
         } else {
@@ -149,28 +177,28 @@ class MetricsType(
         return Pair(trues, falses)
     }
 
-    fun samplesToCsv(group: String, classType: String): String {
+    fun samplesToCsv(group: String, classType: ClassificationType): String {
         return when (classType) {
-            "truePositive" -> samplesToCSV(map[group]?.cls?.truePositive?.samples)
-            "falsePositive" -> samplesToCSV(map[group]?.cls?.falsePositive?.samples)
-            "falseNegative" -> samplesToCSV(map[group]?.cls?.falseNegative?.samples)
-            "noMatch" -> samplesToCSV(map[group]?.cls?.noMatch?.samples)
+            ClassificationType.TRUE_POSITIVE -> samplesToCSV(map[group]?.cls?.truePositive?.samples)
+            ClassificationType.FALSE_POSITIVE -> samplesToCSV(map[group]?.cls?.falsePositive?.samples)
+            ClassificationType.FALSE_NEGATIVE -> samplesToCSV(map[group]?.cls?.falseNegative?.samples)
+            ClassificationType.NO_MATCH -> samplesToCSV(map[group]?.cls?.noMatch?.samples)
+        }
+    }
+
+    fun samplesToCsv(classType: ClassificationType): String {
+        return when (classType) {
+            ClassificationType.TRUE_POSITIVE -> samplesToCSV(classes.truePositive.samples)
+            ClassificationType.FALSE_NEGATIVE -> samplesToCSV(classes.falseNegative.samples)
+            ClassificationType.NO_MATCH -> samplesToCSV(classes.noMatch.samples)
             else -> ""
         }
     }
 
-    fun samplesToCsv(classType: String): String {
-        return when (classType) {
-            "truePositive" -> samplesToCSV(classes.truePositive.samples)
-            "falseNegative" -> samplesToCSV(classes.falseNegative.samples)
-            "noMatch" -> samplesToCSV(classes.noMatch.samples)
-            else -> ""
-        }
-    }
 
+    private fun samplesToCSV(comps: List<TermComparison>?): String = samplesToCSV(comps, hypothesis, reference)
 
     override fun samplesToCSV(): String {
-        val cls = listOf(classes.falsePositive, classes.falseNegative, classes.truePositive)
-        return samplesToCSV(cls.flatMap { it.samples })
+        throw NotImplementedError()
     }
 }

@@ -1,15 +1,16 @@
 package org.ivdnt.galahad.evaluation
 
 import java.util.zip.ZipInputStream
-import org.ivdnt.galahad.TestConfig
-import org.ivdnt.galahad.UserHeader
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.util.UserHeader
+import org.ivdnt.galahad.util.addUrlParams
 import org.ivdnt.galahad.app.Config
-import org.ivdnt.galahad.app.GalahadApplication
-import org.ivdnt.galahad.data.corpus.Corpus
-import org.ivdnt.galahad.port.Resource
-import org.ivdnt.galahad.port.createCorpus
+import org.ivdnt.galahad.app.Galahad
+import org.ivdnt.galahad.corpora.Corpus
+import org.ivdnt.galahad.util.TestUtil
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.ContextConfiguration
@@ -19,7 +20,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class, TestConfig::class])
+@ContextConfiguration(classes = [Galahad::class, TestConfig::class])
 class EvaluationControllerTest(
     @Autowired val mvc: MockMvc,
     @Autowired val config: Config,
@@ -30,7 +31,7 @@ class EvaluationControllerTest(
         EvaluationUtil.addDocWithMatchingMultiPosLemma(corpus)
 
         // url
-        val uuid = corpus.metadata.expensiveGet().uuid
+        val uuid = corpus.immutableMetadata.uuid
         val url = "/corpora/$uuid/jobs/${TestConfig.TAGGER_NAME}/evaluation/download?reference=sourceLayer"
         // /GET
         val bytes = mvc.perform(
@@ -44,8 +45,14 @@ class EvaluationControllerTest(
     fun `Download confusion samples`() {
         val corpus = corpus()
         // url
-        val uuid = corpus.metadata.expensiveGet().uuid
-        val url = "/corpora/$uuid/jobs/${TestConfig.TAGGER_NAME}/evaluation/download?reference=sourceLayer&referencePos=ADJ&hypothesisPos=ADJ"
+        val uuid = corpus.immutableMetadata.uuid
+        val params = mapOf(
+            "reference" to "sourceLayer",
+            "annotation" to "pos",
+            "refFilter" to "ADJ",
+            "hypoFilter" to "ADJ",
+        )
+        val url = "/corpora/$uuid/jobs/${TestConfig.TAGGER_NAME}/evaluation/confusion/download".addUrlParams(params)
         val bytes = mvc.perform(
             MockMvcRequestBuilders.get(url)
                 .headers(UserHeader.get())
@@ -57,15 +64,14 @@ class EvaluationControllerTest(
     fun `Download metrics samples`() {
         val corpus = corpus()
         // url
-        val uuid = corpus.metadata.expensiveGet().uuid
+        val uuid = corpus.immutableMetadata.uuid
         val params = mapOf(
             "reference" to "sourceLayer",
-            "setting" to "posByPos",
+            "metricsType" to "posByPos",
             "class" to "truePositive",
             "group" to "ADJ",
         )
-        val url = "/corpora/$uuid/jobs/${TestConfig.TAGGER_NAME}/evaluation/metrics/download?" +
-                params.map { (k, v) -> "$k=$v" }.joinToString("&")
+        val url = "/corpora/$uuid/jobs/${TestConfig.TAGGER_NAME}/evaluation/metrics/download".addUrlParams(params)
         val bytes = mvc.perform(
             MockMvcRequestBuilders.get(url)
                 .headers(UserHeader.get())
@@ -75,7 +81,7 @@ class EvaluationControllerTest(
 
     private fun corpus(): Corpus {
         // Need a corpus first
-        val corpus = createCorpus(
+        val corpus = TestUtil.createCorpus(
             config.getWorkingDirectory().resolve("corpora").resolve("custom")
         )
         EvaluationUtil.add_two_docs_to_corpus(corpus)
@@ -91,10 +97,16 @@ class EvaluationControllerTest(
             println("unzipped: " + (zipEntry.name ?: ""))
             val fileContent = String(zipInputStream.readAllBytes(), StandardCharsets.UTF_16LE)
             if (zipEntry.name.split(".")[1] == "csv") {
-                val f: File? = try { Resource.get("evaluation/zip/${zipEntry.name}") } catch (e: Exception) { null }
-                val content: String = f?.readText() ?: ""
-                assertEquals(content, fileContent)
-                evals++
+                val f: File
+                try {
+                    f = TestUtil.get("evaluation/zip/${zipEntry.name}")
+                    val content: String = f.readText()
+                    assertEquals(content, fileContent)
+                    evals++
+                } catch (e: Exception) {
+                    println("File not found: ${zipEntry.name}")
+                    fail(e)
+                }
             }
             zipEntry = zipInputStream.nextEntry
         }
@@ -109,7 +121,7 @@ class EvaluationControllerTest(
             println("unzipped: " + (zipEntry.name ?: ""))
             val fileContent = String(zipInputStream.readAllBytes(), StandardCharsets.UTF_16LE)
             if (zipEntry.name.split(".")[1] == "csv") {
-                assertEquals(Resource.get("evaluation/zip/$expected").readText(), fileContent)
+                assertEquals(TestUtil.get("evaluation/zip/$expected").readText(), fileContent)
                 evals++
             }
             zipEntry = zipInputStream.nextEntry

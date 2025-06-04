@@ -16,10 +16,11 @@
                     </slot>
                 </h3>
                 <span v-if="!noHelp">
-                    <GButton plain v-if="!showHelp" class="question-mark" @click="expand = !expand" :disabled="disabled"
+                    <GButton plain v-if="!showHelp" @click="expand = !expand" :disabled="disabled" class="question-mark"
                         title="Help">
-                        <!-- show &#10006; if expanded, else 𝚒 -->
-                        {{ expand ? '&times;' : '?' }}
+                        <i v-if="expand" class="fa fa-times"></i>
+                        <i v-else class="fa fa-question"></i>
+                        
                     </GButton>
                 </span>
             </div>
@@ -157,7 +158,9 @@ button.plain {
 }
 
 .question-mark {
-    cursor: pointer;
+    font-size: 1em !important;
+    height:39px !important;
+    cursor: pointe !important;
 }
 
 .navs {
@@ -174,5 +177,6 @@ button.plain {
     max-width: 100%;
     align-items: center;
     justify-content: center;
+    margin-top:20px;
 }
 </style>

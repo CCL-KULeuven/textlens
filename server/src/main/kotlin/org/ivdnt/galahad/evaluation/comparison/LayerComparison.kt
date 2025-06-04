@@ -1,26 +1,28 @@
 package org.ivdnt.galahad.evaluation.comparison
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.ivdnt.galahad.data.layer.Layer
-import org.ivdnt.galahad.data.layer.Term
+import org.ivdnt.galahad.annotations.Layer
+import org.ivdnt.galahad.annotations.Term
+import org.ivdnt.galahad.export.DocumentExport
 
-fun ListIterator<Term>.nextOrNull(): Term? {
-    val iter = iterator()
-    return if (iter.hasNext()) iter.next() else null
-}
+fun Iterator<Term>.nextOrNull(): Term? = if (hasNext()) next() else null
 
 // Some hardcoded punctuation
-val PUNCTUATION = listOf(",", ".", "?", "!", ":", ";", ")", "(", "'", "\"")
+val PUNCTUATION: Array<Char> = arrayOf(',', '.', '?', '!', ':', ';', ')', '(', '\'', '"')
 
 /**
- * Match the [Layer.terms] of two layers based on their position (offset and length), not on their actual value (literal/pos/lemma).
- * When pos filters are provide, only match [TermComparison] of that pos.
+ * Match the [Layer.terms] of two layers based on their [WordForm] position (offset and length)
+ * When filters are provided, only match [TermComparison] that match the filter (on annotation value).
+ * In this way, matches only contain samples that you want to download.
+ * (Still, aggregating these matches is up to the (corpus/documents) evaluation classes)
  */
-class LayerComparison(
-    private val hypothesisLayer: Layer,
-    private val referenceLayer: Layer,
+open class LayerComparison(
+    hypothesisLayer: Layer,
+    referenceLayer: Layer,
     private val layerFilter: LayerFilter? = null,
 ) {
+    constructor(export: DocumentExport) : this(export.layer, export.sourceLayer)
+
     @JsonIgnore
     val matches: MutableList<TermComparison> = ArrayList()
 
@@ -29,12 +31,16 @@ class LayerComparison(
 
     @JsonIgnore
     val hypothesisTermsWithoutMatches: MutableList<Term> = ArrayList()
+
     @JsonIgnore
-    private val hypoIter: ListIterator<Term> = iterForTermsInLayer(hypothesisLayer)
+    private val hypoIter: Iterator<Term> = hypothesisLayer.terms.iterator()
+
     @JsonIgnore
-    private val refIter: ListIterator<Term> = iterForTermsInLayer(referenceLayer)
+    private val refIter: Iterator<Term> = referenceLayer.terms.iterator()
+
     @JsonIgnore
     private var currentHypoTerm: Term? = Term.EMPTY
+
     @JsonIgnore
     private var currentRefTerm: Term? = Term.EMPTY
 
@@ -67,13 +73,13 @@ class LayerComparison(
 
     private fun compareTerm(comp: TermComparison) {
         // Act on the comparison
-        if (comp.fullOverlap) {
+        if (comp.overlap) {
             fullMatch(comp)
         } else {
             // Unequal first offset
-            if (comp.hypoTerm.firstOffset < comp.refTerm.firstOffset) {
+            if (comp.hypoTerm.offset < comp.refTerm.offset) {
                 hypoNoMatch()
-            } else if (comp.hypoTerm.firstOffset > comp.refTerm.firstOffset) {
+            } else if (comp.hypoTerm.offset > comp.refTerm.offset) {
                 refNoMatch()
             }
             // Equal first offset but no match.
@@ -88,9 +94,9 @@ class LayerComparison(
         }
     }
 
-    private fun fullMatch(termComparison: TermComparison) {
-        if (layerFilter?.filter(termComparison) != false) {
-            matches.add(termComparison)
+    private fun fullMatch(comp: TermComparison) {
+        if (layerFilter?.filter(comp) != false) {
+            matches.add(comp)
         }
         nextHypo()
         nextRef()
@@ -101,7 +107,7 @@ class LayerComparison(
         nextHypo()
     }
 
-    private fun hypoNoMatch(t: Term) {
+    protected open fun hypoNoMatch(t: Term) {
         // Note how layerFilter can be null, and both null and true != false.
         if (layerFilter?.hypoTermFilter?.filter(t) != false) {
             hypothesisTermsWithoutMatches.add(t)
@@ -113,7 +119,7 @@ class LayerComparison(
         nextRef()
     }
 
-    private fun refNoMatch(t: Term) {
+    protected open fun refNoMatch(t: Term) {
         if (layerFilter?.refTermFilter?.filter(t) != false) {
             referenceTermsWithoutMatches.add(t)
         }
@@ -127,30 +133,47 @@ class LayerComparison(
         currentRefTerm = refIter.nextOrNull()
     }
 
-    /** Iterate through the terms of the layer sorted on offset. */
-    private fun iterForTermsInLayer(layer: Layer): ListIterator<Term> {
-        return layer.terms
-            // Terms can only be a match if their first offset is the same
-            .sortedBy { it.firstOffset }.listIterator()
-    }
-
-    private fun symmetricTruncatedPcMatch(comp: TermComparison): Boolean {
-        val aStr: String = comp.hypoTerm.literals
-        val bStr: String = comp.refTerm.literals
-        return truncatedPcMatch(aStr, bStr) || truncatedPcMatch(bStr, aStr)
-    }
-
     companion object {
-        fun truncatedPcMatch(aStr: String, bStr: String): Boolean {
+        fun symmetricTruncatedPcMatch(comp: TermComparison): Boolean {
+            val aStr: String = comp.hypoTerm.token
+            val bStr: String = comp.refTerm.token
+            return truncatedPcMatch(aStr, bStr) || truncatedPcMatch(bStr, aStr)
+        }
+
+        private fun truncatedPcMatch(aStr: String, bStr: String): Boolean {
             if (aStr.isEmpty() || bStr.isEmpty()) {
                 return false
             }
-            if (PUNCTUATION.contains(aStr.last().toString())) {
-                if (aStr.slice(0 until aStr.lastIndex) == bStr) {
-                    return true
-                }
-            }
-            return false
+            return truncatePC(aStr) == bStr
         }
+
+        fun truncatePC(str: String): String {
+            return if (str.isNotEmpty() && str.last() in PUNCTUATION) {
+                str.slice(0 until str.lastIndex)
+            } else {
+                str
+            }
+        }
+    }
+}
+
+class DocumentLayerComparison(
+    private val hypothesisLayer: Layer,
+    private val referenceLayer: Layer,
+    private val layerFilter: LayerFilter? = null,
+) : LayerComparison(hypothesisLayer, referenceLayer, layerFilter) {
+
+    override fun hypoNoMatch(t: Term) {
+        // ignore
+    }
+
+    override fun refNoMatch(t: Term) {
+        if (layerFilter?.refTermFilter?.filter(t) != false) {
+            matches.add(TermComparison(hypoTerm = Term.EMPTY, refTerm = t))
+        }
+    }
+
+    init {
+        matches.addAll(referenceTermsWithoutMatches.map { TermComparison(hypoTerm = Term.EMPTY, refTerm = it) })
     }
 }

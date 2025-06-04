@@ -1,0 +1,21 @@
+id: lettuce-de-mono
+description: "lettuce_de_mono"
+tagset: STTS
+eraFrom: "0"
+eraTo: "2024"
+language: "German"
+annotations:
+  - token
+  - pos
+model:
+  name: lettuce_de_mono
+  href: todo
+software:
+  name: lettuce
+  href: todo
+dataset:
+  name: todo
+  href: todo
+trainedBy: "lettuce"
+date: "2024-05-30"
+devport: 8142

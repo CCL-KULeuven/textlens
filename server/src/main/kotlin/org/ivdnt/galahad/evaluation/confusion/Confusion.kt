@@ -1,21 +1,20 @@
 package org.ivdnt.galahad.evaluation.confusion
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.ivdnt.galahad.data.layer.Term
-import org.ivdnt.galahad.evaluation.CsvSampleExporter
+import org.ivdnt.galahad.annotations.Annotation
 import org.ivdnt.galahad.evaluation.EvaluationEntry
 import org.ivdnt.galahad.evaluation.comparison.TermComparison
-import org.ivdnt.galahad.port.csv.CSVFile
+import org.ivdnt.galahad.export.csv.CSVFile
 
-const val MULTIPLE_POS = "MULTIPLE"
-const val OTHER_POS = "OTHER"
-const val OTHER_POS_REGEX = """^[^a-zA-Z]"""
+const val MULTIPLE_POS: String = "MULTIPLE"
+const val OTHER_POS: String = "OTHER"
+const val OTHER_POS_REGEX: String = """^[^a-zA-Z]"""
 
 /**
  * Generic class for the part of speech confusion of a corpus or document.
  * The idea is to sum up the confusions as we go through the terms one by one using [add].
  */
-open class Confusion(private val truncate: Boolean = true): CsvSampleExporter {
+open class Confusion(private val truncate: Boolean = true, val annotation: Annotation) {
 
     /**
      * null-key if there is no match
@@ -73,19 +72,12 @@ open class Confusion(private val truncate: Boolean = true): CsvSampleExporter {
         return ret
     }
 
-    /**
-     * CSV representation of all samples where the hypothesis pos and reference pos are [hypoPos] and [refPos].
-     */
-    override fun samplesToCSV(): String {
-        return samplesToCSV(matrix.values.firstOrNull()?.samples)
-    }
-
     // Cumulative addition functions
 
     fun add(termComp: TermComparison) {
         add(
-            termComp.hypoTerm.posHeadGroup ?: Term.NO_POS,
-            termComp.refTerm.posHeadGroup ?: Term.NO_POS,
+            termComp.hypoTerm.annotationHeadOrMissing(annotation),
+            termComp.refTerm.annotationHeadOrMissing(annotation),
             termComp
         )
     }
@@ -108,11 +100,11 @@ open class Confusion(private val truncate: Boolean = true): CsvSampleExporter {
     private fun add(pos1: String, pos2: String, evaluationEntry: EvaluationEntry) {
         when {
             // Complex pos are mapped to a single category
-            pos1.contains('+') -> add(MULTIPLE_POS, pos2, evaluationEntry)
-            pos2.contains('+') -> add(pos1, MULTIPLE_POS, evaluationEntry)
+            '+' in pos1 -> add(MULTIPLE_POS, pos2, evaluationEntry)
+            '+' in pos2 -> add(pos1, MULTIPLE_POS, evaluationEntry)
             // Non-alphabetical pos are mapped to a single category "other"
-            pos1.contains(Regex(OTHER_POS_REGEX)) -> add(OTHER_POS, pos2, evaluationEntry)
-            pos2.contains(Regex(OTHER_POS_REGEX)) -> add(pos1, OTHER_POS, evaluationEntry)
+            Regex(OTHER_POS_REGEX) in pos1 -> add(OTHER_POS, pos2, evaluationEntry)
+            Regex(OTHER_POS_REGEX) in pos2 -> add(pos1, OTHER_POS, evaluationEntry)
             // Otherwise a simple merge
             else -> matrix.merge(Pair(pos1, pos2), evaluationEntry) { a, b -> EvaluationEntry.add(a, b, truncate) }
         }

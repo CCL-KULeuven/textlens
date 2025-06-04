@@ -1,19 +1,20 @@
 package org.ivdnt.galahad.taggers
 
-import org.ivdnt.galahad.TestConfig
-import org.ivdnt.galahad.app.GalahadApplication
-import org.ivdnt.galahad.taggers.TaggersController.TaggerHealthStatus
-import org.junit.jupiter.api.Test
-
+import org.ivdnt.galahad.app.Galahad
+import org.ivdnt.galahad.exceptions.TaggerNotFoundException
+import org.ivdnt.galahad.util.TestConfig
+import org.ivdnt.galahad.web.controller.TaggersController
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.ContextConfiguration
 
 @WebMvcTest(properties = ["spring.main.allow-bean-definition-overriding=true"])
-@ContextConfiguration(classes = [GalahadApplication::class])
+@ContextConfiguration(classes = [Galahad::class])
 class TaggerStoreControllerTest(
-    @Autowired val ctrl: TaggersController
+    @Autowired val ctrl: TaggersController,
 ) {
 
     @Test
@@ -31,12 +32,11 @@ class TaggerStoreControllerTest(
 
     @Test
     fun `Get invalid tagger`() {
-        val tagger = ctrl.getTagger("invalid")
-        assertNull(tagger)
+        assertThrows<TaggerNotFoundException> { ctrl.getTagger("invalid") }
     }
 
     @Test
     fun `Get health of invalid tagger`() {
-        assertEquals(TaggerHealthStatus.ERROR,ctrl.getTaggerHealth("invalid").status)
+        assertEquals(TaggerHealthStatus.ERROR, ctrl.getTaggerHealth("invalid").status)
     }
 }
