@@ -16,7 +16,7 @@
 // Components
 import { GTabs, ExternalLink } from '@/components'
 
-const apiURL = window.location.protocol + '//' + window.location.hostname + "/api/swagger-ui/index.html"
+const apiURL = window.location.protocol + '//' + window.location.hostname + "/textlens/api/swagger-ui/index.html"
 
 </script>
 
