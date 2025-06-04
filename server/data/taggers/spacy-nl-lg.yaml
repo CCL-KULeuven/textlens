@@ -15,12 +15,12 @@ model:
   name: nl_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
 software:
-  name: spacy
+  name: spaCy
   href: https://spacy.io/models/nl
 dataset:
-  name: nl_core_news_lg
+  name: UD Dutch LassySmall v2.8, UD Dutch Alpino v2.8
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
-trainedBy: "spacy"
+trainedBy: "spaCy"
 date: "2024-11-12"
 devport: 8810
 version: "3.8.2"
