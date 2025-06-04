@@ -11,6 +11,7 @@ annotations:
   - upos
   - head
   - deprel
+  - ner
 model:
   name: nl_core_news_lg
   href: https://github.com/explosion/spacy-models/releases/tag/nl_core_news_lg-3.8.0
