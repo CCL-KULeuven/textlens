@@ -1,6 +1,6 @@
 id: lets-nl
 description: "LeTs"
-tagset: CGN
+tagset: CGN/D-Coi
 eraFrom: "0"
 eraTo: "2024"
 language: "Dutch"
@@ -16,8 +16,8 @@ software:
   name: LeTs
   href: https://lt3.ugent.be/resources/lets/
 dataset:
-  name: todo
-  href: https://lt3.ugent.be/resources/lets/
+  name: Dutch Parallel Corpus, Lassy Small
+  href: https://clinjournal.org/clinj/article/view/28/23
 trainedBy: "lettuce"
 date: "2024-05-30"
 devport: 8130
