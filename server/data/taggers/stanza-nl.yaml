@@ -1,5 +1,5 @@
 id: stanza-nl
-description: "stanza nl"
+description: "stanza default Dutch model"
 tagset: "UPOS"
 eraFrom: "2000"
 eraTo: "2020"
