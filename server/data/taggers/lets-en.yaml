@@ -1,6 +1,6 @@
 id: lets-en
 description: "LeTs"
-tagset: UNK
+tagset: Penn
 eraFrom: "0"
 eraTo: "2024"
 language: "English"
@@ -16,8 +16,8 @@ software:
   name: LeTs
   href: https://lt3.ugent.be/resources/lets/
 dataset:
-  name: todo
-  href: https://lt3.ugent.be/resources/lets/
+  name: Penn Treebank, Dutch Parallel Corpus
+  href: https://clinjournal.org/clinj/article/view/28/23
 trainedBy: "LT3"
 date: "2024-05-30"
 devport: 8133
