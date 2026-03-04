@@ -1,7 +1,7 @@
 # Textlens (2.0.0)
 
-A digital text analysis dashboard, a fork based on instituutnederlandsetaal/galahad. Hosted by the Dutch Language Institute at: http://portal.clarin.ivdnt.org/textlens
-
+A digital text analysis dashboard, a fork based on instituutnederlandsetaal/galahad. Hosted by the Dutch Language Institute at: http://hdl.handle.
+net/10032/tm-a3-c4
 
 ## Goal
 
