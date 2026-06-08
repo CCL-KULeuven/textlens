@@ -1,5 +1,10 @@
 <template>
     <div>
+        <p style='color:red; text-align: center'>
+            Due to a hack at the Dutch Language Institute (Instituut voor de Nederlandse Taal) <br>
+            corpora uploaded to <i>Textlens</i> after April 4th may no longer be available. <br>
+            We apologize for the inconvenience. <br>
+        </p>
         <!-- Owner corpus table -->
         <CorpusTable :type="TableCorporaType.User" :corpora="corporaStore.allCorpora"
             @delete="corpus => {setActiveCorpus(corpus); deleteCorpusData = corpus}" 
