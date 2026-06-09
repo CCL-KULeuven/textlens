@@ -24,7 +24,7 @@ services:
             context: server
         restart: unless-stopped
         volumes:
-            - user-corpora-volume:/data/corpora/custom
+            - user-corpora-volume:/data/corpora/user
             - preset-corpora-volume:/data/corpora/presets
             - formats-volume:/data/formats
             - taggers-volume:/data/taggers
