@@ -79,6 +79,16 @@
                     <i v-else class="fa fa-code"></i>
                 </GButton>
 
+              <GButton yellow title="Index" :disabled="!corpusHasDocs(data.item)" @click="indexCorpus(data.item)">
+                <i v-if="data.item.activeJobs > 0" class="fa fa-database fa-spin"></i>
+                <i v-else class="fa fa-database"></i>
+              </GButton>
+
+              <GButton yellow title="Query" :disabled="!corpusHasDocs(data.item)" @click="openBlackLabQuery()">
+                <i v-if="data.item.activeJobs > 0" class="fa fa-search fa-spin"></i>
+                <i v-else class="fa fa-search"></i>
+              </GButton>
+
                 <GButton yellow title="Export results" :disabled="!corpusHasResults(data.item)" @click="$emit('export', data.item)">
                     <i class="fa fa-download"></i>
                 </GButton>
@@ -101,11 +111,13 @@
 <script setup lang='ts'>
 // Libraries & stores
 import { PropType, ref, computed } from 'vue'
+import axios from 'axios'
 import stores from '@/stores'
 // API & types
 import { CorpusMetadata } from '@/types/corpora'
 import { TableCorporaType, Field } from '@/types/table'
 import * as Utils from '@/api/utils'
+import { getDocuments, getRawDocument } from '@/api/documents'
 // Components
 import { ExternalLink, GButton, GTable } from '@/components'
 import help from '@/components/help'
@@ -192,6 +204,28 @@ function formatCollaborators(i: CorpusMetadata): string {
 function customSharedSort(i: CorpusMetadata) {
     if (i.public) return -1
     return i.collaborators.length + i.viewers.length
+}
+
+async function indexCorpus(corpus: CorpusMetadata) {
+    const docsResponse = await getDocuments(corpus.uuid)
+    for (const doc of docsResponse.data) {
+        const rawResponse = await getRawDocument(corpus.uuid, doc.name)
+        const formData = new FormData()
+        formData.append('data', new Blob([rawResponse.data]), doc.name)
+        //await axios.post(
+        //    `http://localhost:8080/blacklab-server/${corpus.owner}:${corpus.name}/docs/?api=4`,
+        //    formData
+        //)
+        await axios.post(
+          `http://localhost:8080/blacklab-server/mijail@ccl.kuleuven.be:${corpus.name}/docs/?api=4`,
+          formData
+        )
+    }
+}
+
+function openBlackLabQuery() {
+    //window.open('http://localhost:8080/blacklab-frontend/${corpus.owner}:${corpus.name}/search/', '_blank')
+    window.open('http://localhost:8080/blacklab-frontend/mijail@ccl.kuleuven.be:${corpus.name}/search/', '_blank')
 }
 
 </script>
