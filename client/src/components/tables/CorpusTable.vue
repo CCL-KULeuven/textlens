@@ -83,6 +83,10 @@
                     <i class="fa fa-download"></i>
                 </GButton>
 
+                <GButton yellow title="Index data" :disabled="!corpusHasResults(data.item)" @click="$emit('indexCorpus', data.item)">
+                    <i class="fa fa-database"></i>
+                </GButton>
+
                 <GButton orange title="Edit corpus metadata" @click="$emit('update', data.item)">
                     <i class="fa fa-pencil"></i>
                 </GButton>

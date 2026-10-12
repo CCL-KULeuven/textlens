@@ -12,6 +12,7 @@
             @create="showNewCorpusModal = true"
             @export="corpus => {setActiveCorpus(corpus); exportCorpusData = corpus} "
             @annotate="corpus => {setActiveCorpus(corpus); annotateCorpusData = corpus}"
+            @indexCorpus="corpus => {setActiveCorpus(corpus); indexCorpusData = corpus}"
             @upload="corpus => {setActiveCorpus(corpus); uploadCorpusData = corpus}">
 <!--             <template #title>Your corpora</template>
  -->        </CorpusTable>
@@ -23,6 +24,7 @@
             @create="showNewCorpusModal = true"
             @export="corpus => {setActiveCorpus(corpus); exportCorpusData = corpus} "
             @annotate="corpus => {setActiveCorpus(corpus); annotateCorpusData = corpus}"
+            @indexCorpus="corpus => {setActiveCorpus(corpus); indexCorpusData = corpus}"
             @upload="corpus => {setActiveCorpus(corpus); uploadCorpusData = corpus}" sharedWithYou>
             <template #title>Shared with you</template>
             <template #help>
@@ -90,6 +92,10 @@
         <ExportModal :show="exportCorpusData !== null" :item="exportCorpusData" :corpus="exportCorpusData" 
             @hide="exportCorpusData = null" />
 
+        <!-- Index modal -->
+        <IndexModal :show="indexCorpusData !== null" :corpus="indexCorpusData"
+            @hide="indexCorpusData = null" />
+
         <!-- Delete modal -->
         <DeleteModal :show="deleteCorpusData !== null" :item="deleteCorpusData"
             :displayname="'Corpus ' + (deleteCorpusData !== null ? deleteCorpusData.name : '[null]')"
@@ -111,6 +117,7 @@ import DeleteModal from "@/components/modals/DeleteModal.vue"
 import UploadModal from "@/components/modals/UploadModal.vue"
 import AnnotateModal from "@/components/modals/AnnotateModal.vue"
 import ExportModal from "@/components/modals/ExportModal.vue"
+import IndexModal from "@/components/modals/IndexModal.vue"
 import CorpusFormHelp from "@/components/help/CorpusFormHelp.vue"
 // import BenchmarkSetsHelp from "@/components/help/BenchmarkSetsHelp.vue"
 
@@ -128,6 +135,7 @@ const uploadCorpusData = ref(null as null | CorpusMetadata)
 const annotateCorpusData = ref(null as null | CorpusMetadata)
 const updateCorpusData = ref(null as null | CorpusMetadata)
 const exportCorpusData = ref(null as null | CorpusMetadata)
+const indexCorpusData = ref(null as null | CorpusMetadata)
 
 
 const editMode = (corpus: CorpusMetadata) => {

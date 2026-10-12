@@ -18,6 +18,7 @@ import useMetrics from './evaluation/metrics'
 import useConfusion from './evaluation/confusion'
 
 import useExportStore from './exportstore'
+import useIndexing from './indexing'
 
 // Custom types
 export type AppStore = ReturnType<typeof useApp>
@@ -34,6 +35,7 @@ export type DistributionStore = ReturnType<typeof useDistribution>
 export type MetricsStore = ReturnType<typeof useMetrics>
 export type ConfusionStore = ReturnType<typeof useConfusion>
 export type ExportStore = ReturnType<typeof useExportStore>
+export type IndexingStore = ReturnType<typeof useIndexing>
 
 export default {
     useApp,
@@ -43,6 +45,7 @@ export default {
     useDistribution,
     useDocuments,
     useExportStore,
+    useIndexing,
     useMetrics,
     useJobs,
     useJobSelection,

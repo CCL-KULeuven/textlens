@@ -48,6 +48,7 @@ const val CORPUS_URL: String = "$CORPORA_URL/{corpus}"
 const val JOBS_URL: String = "$CORPUS_URL/jobs"
 const val JOB_URL: String = "$JOBS_URL/{job}"
 const val JOB_DOCUMENT_URL: String = "$JOB_URL/documents/{document}"
+const val INDEX_URL: String = "$JOB_URL/index"
 
 const val EVALUATION_URL: String = "$JOB_URL/evaluation"
 const val DISTRIBUTION_URL: String = "$EVALUATION_URL/distribution"
