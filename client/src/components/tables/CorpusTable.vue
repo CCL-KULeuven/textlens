@@ -79,12 +79,16 @@
                     <i v-else class="fa fa-code"></i>
                 </GButton>
 
-                <GButton yellow title="Export results" :disabled="!corpusHasResults(data.item)" @click="$emit('export', data.item)">
-                    <i class="fa fa-download"></i>
-                </GButton>
-
                 <GButton yellow title="Index data" :disabled="!corpusHasResults(data.item)" @click="$emit('indexCorpus', data.item)">
                     <i class="fa fa-database"></i>
+                </GButton>
+
+                <GButton yellow title="Query in BlackLab" :disabled="!indexingStore.isIndexed(data.item.uuid)" @click="openBlackLabQuery(data.item)">
+                    <i class="fa fa-search"></i>
+                </GButton>
+
+                <GButton yellow title="Export results" :disabled="!corpusHasResults(data.item)" @click="$emit('export', data.item)">
+                    <i class="fa fa-download"></i>
                 </GButton>
 
                 <GButton orange title="Edit corpus metadata" @click="$emit('update', data.item)">
@@ -117,6 +121,7 @@ import help from '@/components/help'
 // Stores
 const userStore = stores.useUser()
 const corporaStore = stores.useCorpora()
+const indexingStore = stores.useIndexing()
 
 // Props
 const props = defineProps({
@@ -184,6 +189,13 @@ function corpusHasDocs(corpus: CorpusMetadata | null): boolean {
 function corpusHasResults(corpus: CorpusMetadata | null): boolean {
         if (!corpus) return false
         return (corpus.numResults ?? 0) > 0
+}
+
+function openBlackLabQuery(corpus: CorpusMetadata) {
+    // TODO: use the corpus owner instead (same as BLACKLAB_USER in the server IndexService).
+    const BLACKLAB_USER = "mijail@ccl.kuleuven.be"
+    const url = `http://localhost:8080/blacklab-frontend/${BLACKLAB_USER}:${corpus.name}`
+    window.open(`${url}/search/`, '_blank')
 }
 
 function formatCollaborators(i: CorpusMetadata): string {
