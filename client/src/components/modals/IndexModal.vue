@@ -16,6 +16,9 @@
                     <GInfo spinner v-if="indexingStore.loading">
                         <span><i>Please wait while your corpus is being indexed.</i></span>
                     </GInfo>
+                    <GInfo v-if="indexingStore.messageFor(corporaStore.activeUUID)">
+                        {{ indexingStore.messageFor(corporaStore.activeUUID) }}
+                    </GInfo>
                 </div>
             </GCard>
         </GCard>

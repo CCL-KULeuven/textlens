@@ -19,6 +19,8 @@ const useIndexing = defineStore('indexing', () => {
     const loading = ref(false)
     // UUIDs of corpora that were indexed successfully (this session only).
     const indexedCorpora = ref([] as string[])
+    // Result message of the last index request per corpus UUID, shown in the index modal until replaced.
+    const messages = ref({} as { [corpus: string]: string })
     // Indexing always uses CoNLL-U.
     const format = Format.Conllu
     const linksAreValid = computed(() => {
@@ -30,11 +32,17 @@ const useIndexing = defineStore('indexing', () => {
         return indexedCorpora.value.includes(corpus)
     }
 
+    function messageFor(corpus: string): string | null {
+        return messages.value[corpus] ?? null
+    }
+
     function index() {
         loading.value = true
         const corpus = corporaStore.activeUUID
         API.postIndex(corpus, jobSelection.hypothesisJobId, format)
-            .then(() => {
+            .then(response => {
+                messages.value[corpus] = response.data.message
+                // An already existing corpus can be queried as well.
                 if (!indexedCorpora.value.includes(corpus)) indexedCorpora.value.push(corpus)
             })
             .catch(error => app.handleServerError("index corpus", error))
@@ -44,9 +52,9 @@ const useIndexing = defineStore('indexing', () => {
     // Exports
     return {
         // Fields
-        format, linksAreValid, loading, indexedCorpora,
+        format, linksAreValid, loading, indexedCorpora, messages,
         // Methods
-        index, isIndexed,
+        index, isIndexed, messageFor,
     }
 })
 

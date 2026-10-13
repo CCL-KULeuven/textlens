@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.ivdnt.galahad.app.INDEX_URL
 import org.ivdnt.galahad.documents.DocumentFormat
 import org.ivdnt.galahad.exceptions.ErrorResponse
+import org.ivdnt.galahad.web.service.IndexResult
 import org.ivdnt.galahad.web.service.IndexService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
@@ -25,10 +26,13 @@ class IndexController(
 
     @Operation(
         summary = "Index job layer",
-        description = "Convert the layer of a job to a format and send it to be indexed. Requires write access to the corpus.",
+        description = "Convert the layer of a job to a format and send it to be indexed, unless the corpus is already indexed. Requires write access to the corpus.",
     )
     @ApiResponse(
         responseCode = "202", description = "The layer was sent to be indexed."
+    )
+    @ApiResponse(
+        responseCode = "200", description = "The corpus already exists in the index, so nothing was indexed."
     )
     @ApiResponse(
         responseCode = "404",
@@ -41,8 +45,9 @@ class IndexController(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
         @RequestParam(defaultValue = "conllu") @Parameter(description = "Format to index") format: DocumentFormat,
-    ) {
-        indexService.index(corpus, job, format)
-        response?.status = HttpServletResponse.SC_ACCEPTED
+    ): IndexResult {
+        val result = indexService.index(corpus, job, format)
+        response?.status = if (result.indexed) HttpServletResponse.SC_ACCEPTED else HttpServletResponse.SC_OK
+        return result
     }
 }
