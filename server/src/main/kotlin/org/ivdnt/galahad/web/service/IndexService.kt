@@ -39,7 +39,7 @@ class IndexService(val corpora: CorporaService) : Logging {
     private val user get() = User.fromRequest(request)
     // FIXME: use user.name in production. It contains the same REMOTE_USER as blacklab expects behind the clarin portal.  
     //private const val BLACKLAB_USER = user.name
-    private const val BLACKLAB_USER = "mijail@ccl.kuleuven.be"
+    private val BLACKLAB_USER = "mijail@ccl.kuleuven.be"
 
     /**
      * Convert the layer of [job] to [format] and index it in BlackLab, unless the BlackLab corpus already exists.
@@ -57,7 +57,7 @@ class IndexService(val corpora: CorporaService) : Logging {
         }
         val export = CorpusExport.create(corpus, job, format, user, shouldMerge = false, posHeadOnly = false)
         sendIndexRequest(restTemplate, corpusName, corpus, export)
-        return IndexResult(isIndexing = true, message = "Corpus ${corpus.mutableMetadata.name} is being indexed in BlackLab.")
+        return IndexResult(isIndexing = true, message = "Corpus ${corpus.mutableMetadata.name} was indexed in BlackLab.")
     }
 
     private fun blacklabCorpusName(corpus: Corpus) = "$BLACKLAB_USER:${corpus.mutableMetadata.name}"
@@ -107,7 +107,7 @@ class IndexService(val corpora: CorporaService) : Logging {
     private fun createCorpus(restTemplate: RestTemplate, corpusName: String) {
         val createParams = LinkedMultiValueMap<String, String>().apply {
             add("name", corpusName)
-            add("format", format)
+            add("format", "conll-u")
         }
         val createHeaders = HttpHeaders().apply { contentType = MediaType.APPLICATION_FORM_URLENCODED }
         logger.info("Creating BlackLab corpus $corpusName")
