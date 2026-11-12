@@ -22,13 +22,11 @@ import org.springframework.web.client.RestTemplate
 import java.io.File
 import java.util.*
 
-// TODO: use the corpus owner instead.
-private const val BLACKLAB_USER = "mijail@ccl.kuleuven.be"
 
 /**
- * Outcome of an index request. [indexed] is false when the corpus already existed in BlackLab and nothing was sent.
+ * Outcome of an index request. [isIndexing] is false when the corpus already existed in BlackLab and nothing was sent.
  */
-data class IndexResult(val indexed: Boolean, val message: String)
+data class IndexResult(val isIndexing: Boolean, val message: String)
 
 @Service
 class IndexService(val corpora: CorporaService) : Logging {
@@ -39,6 +37,9 @@ class IndexService(val corpora: CorporaService) : Logging {
     private lateinit var blacklabUrl: String
 
     private val user get() = User.fromRequest(request)
+    // FIXME: use user.name in production. It contains the same REMOTE_USER as blacklab expects behind the clarin portal.  
+    //private const val BLACKLAB_USER = user.name
+    private const val BLACKLAB_USER = "mijail@ccl.kuleuven.be"
 
     /**
      * Convert the layer of [job] to [format] and index it in BlackLab, unless the BlackLab corpus already exists.
@@ -50,13 +51,13 @@ class IndexService(val corpora: CorporaService) : Logging {
         if (corpusExists(restTemplate, corpusName)) {
             logger.info("BlackLab corpus $corpusName already exists, skipping indexing")
             return IndexResult(
-                indexed = false,
+                isIndexing = false,
                 message = "Corpus ${corpus.mutableMetadata.name} already exists in BlackLab, skipping indexing."
             )
         }
         val export = CorpusExport.create(corpus, job, format, user, shouldMerge = false, posHeadOnly = false)
         sendIndexRequest(restTemplate, corpusName, corpus, export)
-        return IndexResult(indexed = true, message = "Corpus ${corpus.mutableMetadata.name} was indexed in BlackLab.")
+        return IndexResult(isIndexing = true, message = "Corpus ${corpus.mutableMetadata.name} is being indexed in BlackLab.")
     }
 
     private fun blacklabCorpusName(corpus: Corpus) = "$BLACKLAB_USER:${corpus.mutableMetadata.name}"
@@ -106,7 +107,7 @@ class IndexService(val corpora: CorporaService) : Logging {
     private fun createCorpus(restTemplate: RestTemplate, corpusName: String) {
         val createParams = LinkedMultiValueMap<String, String>().apply {
             add("name", corpusName)
-            add("format", "conll-u")
+            add("format", format)
         }
         val createHeaders = HttpHeaders().apply { contentType = MediaType.APPLICATION_FORM_URLENCODED }
         logger.info("Creating BlackLab corpus $corpusName")

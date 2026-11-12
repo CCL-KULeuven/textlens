@@ -44,10 +44,11 @@ class IndexController(
     fun postIndex(
         @PathVariable @Parameter(description = "Corpus UUID") corpus: UUID,
         @PathVariable @Parameter(description = "Tagger name") job: String,
-        @RequestParam(defaultValue = "conllu") @Parameter(description = "Format to index") format: DocumentFormat,
+        @RequestParam(defaultValue = "conll-u") @Parameter(description = "Format to index") format: DocumentFormat,
     ): IndexResult {
+        format = "conll-u" //hardcoded for the time being
         val result = indexService.index(corpus, job, format)
-        response?.status = if (result.indexed) HttpServletResponse.SC_ACCEPTED else HttpServletResponse.SC_OK
+        response?.status = if (result.isIndexed) HttpServletResponse.SC_ACCEPTED else HttpServletResponse.SC_OK
         return result
     }
 }
