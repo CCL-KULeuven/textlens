@@ -194,7 +194,7 @@ function corpusHasResults(corpus: CorpusMetadata | null): boolean {
 function openBlackLabQuery(corpus: CorpusMetadata) {
     // TODO: use the corpus owner instead (same as BLACKLAB_USER in the server IndexService).
     const BLACKLAB_USER = "mijail@ccl.kuleuven.be"
-    const url = `http://localhost:8080/blacklab-frontend/${BLACKLAB_USER}:${corpus.name}`
+    const url = `${window.location.protocol}//${window.location.hostname}:8080/blacklab-frontend/${BLACKLAB_USER}:${corpus.name}`
     window.open(`${url}/search/`, '_blank')
 }
 
